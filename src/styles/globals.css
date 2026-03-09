@@ -44,3 +44,73 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(100%); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(108, 92, 231, 0); }
+}
+
+@keyframes progress-shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+.animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+.animate-fade-in-scale { animation: fadeInScale 0.3s ease-out forwards; }
+.animate-slide-in-right { animation: slideInRight 0.3s ease-out forwards; }
+.animate-slide-in-up { animation: slideInUp 0.4s ease-out forwards; }
+.animate-toast-in { animation: toastIn 0.3s ease-out forwards; }
+.animate-toast-out { animation: toastOut 0.3s ease-in forwards; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+.progress-shimmer {
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hover) 50%, var(--accent) 100%);
+  background-size: 200% 100%;
+  animation: progress-shimmer 1.5s ease-in-out infinite;
+}
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.hover-glow {
+  transition: box-shadow 0.2s ease;
+}
+.hover-glow:hover {
+  box-shadow: 0 0 0 1px var(--accent), 0 0 16px rgba(108, 92, 231, 0.15);
+}

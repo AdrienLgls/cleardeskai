@@ -76,7 +76,7 @@ function StatCard({
 }) {
   return (
     <div
-      className="rounded-xl p-5 border"
+      className="rounded-xl p-5 border hover-lift"
       style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
     >
       <div className="flex items-center gap-2 mb-3" style={{ color: "var(--accent)" }}>
@@ -106,7 +106,7 @@ function ActionCard({
   return (
     <button
       onClick={onClick}
-      className="flex items-start gap-4 rounded-xl p-5 border text-left transition-colors hover:border-[var(--accent)]"
+      className="flex items-start gap-4 rounded-xl p-5 border text-left transition-all duration-200 hover-glow hover-lift"
       style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
     >
       <div

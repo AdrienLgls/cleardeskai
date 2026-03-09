@@ -34,7 +34,7 @@ export function Sidebar({ currentView, onNavigate }: SidebarProps) {
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg mb-1 text-sm font-medium transition-colors"
+              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg mb-1 text-sm font-medium transition-all duration-200 hover:translate-x-0.5"
               style={{
                 background: active ? "var(--bg-tertiary)" : "transparent",
                 color: active ? "var(--text-primary)" : "var(--text-secondary)",
