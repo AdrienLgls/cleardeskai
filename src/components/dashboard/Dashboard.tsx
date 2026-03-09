@@ -24,7 +24,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-4 mb-8 stagger-in">
         <StatCard
           icon={<FolderOpen size={20} />}
           label="Files Organized"
@@ -46,7 +46,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
       <h2 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
         Quick Actions
       </h2>
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-4 mb-8 stagger-in">
         <ActionCard
           icon={<ScanSearch size={24} />}
           title="Scan a Folder"
@@ -82,7 +82,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2 stagger-in">
           {recentOps.map((op) => (
             <div
               key={op.id}
@@ -147,7 +147,7 @@ function ActionCard({ icon, title, description, onClick }: { icon: React.ReactNo
   return (
     <button
       onClick={onClick}
-      className="flex items-start gap-4 rounded-xl p-5 border text-left transition-all duration-200 hover-glow hover-lift"
+      className="flex items-start gap-4 rounded-xl p-5 border text-left hover-glow hover-lift"
       style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
     >
       <div className="rounded-lg p-2.5" style={{ background: "var(--bg-tertiary)", color: "var(--accent)" }}>

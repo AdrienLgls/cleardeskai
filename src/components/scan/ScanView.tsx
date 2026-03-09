@@ -26,6 +26,24 @@ export function ScanView() {
   const [applied, setApplied] = useState<number | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [pullingModel, setPullingModel] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    const items = e.dataTransfer.items;
+    if (items && items.length > 0) {
+      const item = items[0];
+      if (item.kind === "file") {
+        const file = item.getAsFile();
+        if (file) {
+          // Tauri drops provide the path via file name for directories
+          const path = (file as File & { path?: string }).path || file.name;
+          if (path) setScanFolder(path);
+        }
+      }
+    }
+  }
 
   useEffect(() => {
     invoke<{ status: string }>("check_ollama_status").then((s) => {
@@ -174,21 +192,28 @@ export function ScanView() {
 
       {/* Folder Selection */}
       <div
-        className="rounded-xl p-6 border mb-6"
-        style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+        className={`rounded-xl p-6 border mb-6 drop-zone ${dragOver ? "drag-over" : ""}`}
+        style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", borderStyle: scan.selectedFolder ? "solid" : "dashed" }}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
       >
         <div className="flex items-center gap-4">
           <button
             onClick={handleSelectFolder}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm btn"
             style={{ background: "var(--accent)", color: "white" }}
           >
             <FolderOpen size={16} />
             Select Folder
           </button>
-          {scan.selectedFolder && (
+          {scan.selectedFolder ? (
             <span className="text-sm font-mono" style={{ color: "var(--text-secondary)" }}>
               {scan.selectedFolder}
+            </span>
+          ) : (
+            <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              or drag & drop a folder here
             </span>
           )}
         </div>
@@ -196,7 +221,7 @@ export function ScanView() {
         {scan.selectedFolder && !scan.scanning && scan.results.length === 0 && (
           <button
             onClick={handleScan}
-            className="flex items-center gap-2 mt-4 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors"
+            className="flex items-center gap-2 mt-4 px-4 py-2.5 rounded-lg font-medium text-sm btn animate-pulse-glow"
             style={{ background: "var(--success)", color: "white" }}
           >
             <Play size={16} />
@@ -222,8 +247,8 @@ export function ScanView() {
             style={{ background: "var(--bg-tertiary)" }}
           >
             <div
-              className="h-full rounded-full transition-all duration-300"
-              style={{ width: `${scan.progress}%`, background: "var(--accent)" }}
+              className="h-full rounded-full transition-all duration-300 progress-shimmer"
+              style={{ width: `${scan.progress}%` }}
             />
           </div>
         </div>
@@ -235,7 +260,7 @@ export function ScanView() {
           className="rounded-xl p-10 border text-center mb-6 animate-fade-in"
           style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
         >
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: "var(--success)", opacity: 0.15 }}>
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-in" style={{ background: "var(--success)", opacity: 0.15 }}>
             <Check size={32} style={{ color: "var(--success)" }} />
           </div>
           <h2 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
@@ -280,7 +305,7 @@ export function ScanView() {
             </div>
           </div>
 
-          <div className="space-y-2 mb-6">
+          <div className="space-y-2 mb-6 stagger-in">
             {scan.results.map((r, i) => (
               <div
                 key={i}
@@ -370,7 +395,7 @@ export function ScanView() {
               <button
                 onClick={handleApply}
                 disabled={applying}
-                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-colors"
+                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold btn"
                 style={{ background: "var(--accent)", color: "white" }}
               >
                 {applying ? (
