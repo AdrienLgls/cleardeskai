@@ -22,6 +22,7 @@ export function ScanView() {
   } = useAppStore();
   const { toast } = useToast();
   const [applying, setApplying] = useState(false);
+  const [applied, setApplied] = useState<number | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
 
   async function handleSelectFolder() {
@@ -68,6 +69,7 @@ export function ScanView() {
         changes: changes.map((c) => ({ ...c, newName: c.newName ?? undefined, changeType: c.changeType as "move" | "rename" | "move_and_rename" })),
         undone: false,
       });
+      setApplied(approved.length);
       toast("success", `${approved.length} files organized successfully`);
     } catch (err) {
       toast("error", `Failed to apply changes: ${err}`);
@@ -140,8 +142,34 @@ export function ScanView() {
         </div>
       )}
 
+      {/* Success State */}
+      {applied !== null && (
+        <div
+          className="rounded-xl p-10 border text-center mb-6 animate-fade-in"
+          style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+        >
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: "var(--success)", opacity: 0.15 }}>
+            <Check size={32} style={{ color: "var(--success)" }} />
+          </div>
+          <h2 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+            {applied} files organized!
+          </h2>
+          <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
+            All changes have been applied. You can undo this from the History page.
+          </p>
+          <button
+            onClick={() => { resetScan(); setApplied(null); }}
+            className="flex items-center gap-2 mx-auto px-5 py-2.5 rounded-lg font-medium text-sm"
+            style={{ background: "var(--accent)", color: "white" }}
+          >
+            <FolderOpen size={16} />
+            Scan Another Folder
+          </button>
+        </div>
+      )}
+
       {/* Results */}
-      {scan.results.length > 0 && !scan.scanning && (
+      {applied === null && scan.results.length > 0 && !scan.scanning && (
         <>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
