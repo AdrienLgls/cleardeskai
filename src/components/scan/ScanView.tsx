@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File } from "lucide-react";
+import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -186,6 +186,29 @@ export function ScanView() {
       toast("error", `Failed to apply changes: ${err}`);
     }
     setApplying(false);
+  }
+
+  function exportCSV() {
+    const header = "File,Extension,Size (bytes),Category,Confidence,Destination,Approved\n";
+    const rows = scan.results.map((r) =>
+      [
+        `"${r.file.name}"`,
+        r.file.extension,
+        r.file.size,
+        r.category,
+        Math.round(r.confidence * 100) + "%",
+        `"${r.proposedFolder}/${r.proposedName || r.file.name}"`,
+        r.approved ? "Yes" : "No",
+      ].join(",")
+    ).join("\n");
+    const blob = new Blob([header + rows], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cleardeskai-scan-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast("success", "Scan results exported as CSV");
   }
 
   const approvedCount = scan.results.filter((r) => r.approved).length;
@@ -452,6 +475,14 @@ export function ScanView() {
                 style={{ background: "var(--danger)", color: "white" }}
               >
                 Reject All
+              </button>
+              <button
+                onClick={exportCSV}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium"
+                style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
+                title="Export results as CSV"
+              >
+                <FileDown size={14} />
               </button>
             </div>
           </div>
