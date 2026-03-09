@@ -528,8 +528,8 @@ export function ScanView() {
             style={{ background: "var(--bg-tertiary)" }}
           >
             <div
-              className="h-full rounded-full transition-all duration-500 ease-out progress-shimmer"
-              style={{ width: `${scan.progress}%` }}
+              className="h-full rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${scan.progress}%`, background: "var(--accent)" }}
             />
           </div>
           {scan.totalFiles > 0 && (
@@ -904,8 +904,8 @@ export function ScanView() {
               </div>
               <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ background: "var(--bg-tertiary)" }}>
                 <div
-                  className="h-full rounded-full transition-all duration-300 ease-out progress-shimmer"
-                  style={{ width: `${pct}%` }}
+                  className="h-full rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${pct}%`, background: "var(--accent)" }}
                 />
               </div>
               <div className="flex justify-between mt-2 text-xs" style={{ color: "var(--text-secondary)" }}>
