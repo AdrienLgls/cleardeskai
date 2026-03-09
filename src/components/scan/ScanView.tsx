@@ -9,6 +9,18 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { useAppStore } from "../../stores/appStore";
 import { useToast } from "../toast/ToastProvider";
 
+const categoryColors: Record<string, string> = {
+  Documents: "#6C5CE7", Images: "#00B894", Videos: "#E17055",
+  Music: "#FDCB6E", Code: "#0984E3", Archives: "#636E72",
+  PDFs: "#D63031", Invoices: "#00CEC9", Screenshots: "#A29BFE",
+  Spreadsheets: "#55EFC4", Presentations: "#E84393", Fonts: "#74B9FF",
+  Databases: "#81ECEC", Design: "#FAB1A0", Other: "#B2BEC3",
+};
+
+function getCategoryColor(category: string): string {
+  return categoryColors[category] || "#B2BEC3";
+}
+
 const fileIconMap: Record<string, typeof File> = {
   // Images
   jpg: FileImage, jpeg: FileImage, png: FileImage, gif: FileImage, svg: FileImage, webp: FileImage, bmp: FileImage, ico: FileImage,
@@ -490,12 +502,7 @@ export function ScanView() {
               return acc;
             }, {});
             const total = scan.results.length;
-            const catColors: Record<string, string> = {
-              Documents: "#6C5CE7", Images: "#00B894", Videos: "#E17055",
-              Music: "#FDCB6E", Code: "#0984E3", Archives: "#636E72",
-              PDFs: "#D63031", Invoices: "#00CEC9", Screenshots: "#A29BFE",
-              Spreadsheets: "#55EFC4", Other: "#B2BEC3",
-            };
+            const catColors = categoryColors;
             return (
               <div className="rounded-xl p-4 border mb-4 animate-fade-in" style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}>
                 <div className="flex h-2 rounded-full overflow-hidden mb-3" style={{ background: "var(--bg-tertiary)" }}>
@@ -649,6 +656,12 @@ export function ScanView() {
                     {r.proposedFolder}/{r.proposedName || r.file.name}
                   </span>
                   <span
+                    className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
+                    style={{ background: getCategoryColor(r.category) + "22", color: getCategoryColor(r.category), border: `1px solid ${getCategoryColor(r.category)}44` }}
+                  >
+                    {r.category}
+                  </span>
+                  <span
                     className="text-xs px-2 py-0.5 rounded-full"
                     style={{
                       background: r.confidence > 0.8 ? "var(--success)" : r.confidence > 0.5 ? "var(--warning)" : "var(--danger)",
@@ -670,8 +683,8 @@ export function ScanView() {
                   <div className="px-4 pb-3 pt-0 border-t" style={{ borderColor: "var(--border)" }}>
                     <div className="flex items-center gap-4 mt-2">
                       <div className="flex items-center gap-1.5">
-                        <Tag size={12} style={{ color: "var(--accent)" }} />
-                        <span className="text-xs font-medium" style={{ color: "var(--accent)" }}>{r.category}</span>
+                        <Tag size={12} style={{ color: getCategoryColor(r.category) }} />
+                        <span className="text-xs font-medium" style={{ color: getCategoryColor(r.category) }}>{r.category}</span>
                       </div>
                       <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
                         {r.file.size >= 1048576 ? `${(r.file.size / 1048576).toFixed(1)} MB` : `${(r.file.size / 1024).toFixed(0)} KB`}
