@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bot, Key, Eye, EyeOff, Save, Shield, Loader2, Trash2, ChevronDown } from "lucide-react";
+import { Bot, Key, Eye, EyeOff, Save, Shield, Loader2, Trash2, ChevronDown, ScanSearch } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../../stores/appStore";
 import { useToast } from "../toast/ToastProvider";
@@ -24,6 +24,10 @@ export function SettingsView() {
   const [models, setModels] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState("");
   const [loadingModels, setLoadingModels] = useState(false);
+  const [scanDepth, setScanDepth] = useState("5");
+  const [scanExcludes, setScanExcludes] = useState("");
+  const [savedScanDepth, setSavedScanDepth] = useState("5");
+  const [savedScanExcludes, setSavedScanExcludes] = useState("");
 
   useEffect(() => {
     // Load API key
@@ -39,6 +43,14 @@ export function SettingsView() {
       if (val) setSelectedModel(val);
       else setSelectedModel("qwen3:4b");
     }).catch(() => setSelectedModel("qwen3:4b"));
+
+    // Load scan settings
+    invoke<string | null>("load_setting", { key: "scan_depth" }).then((val) => {
+      if (val) { setScanDepth(val); setSavedScanDepth(val); }
+    }).catch(() => {});
+    invoke<string | null>("load_setting", { key: "scan_excludes" }).then((val) => {
+      if (val) { setScanExcludes(val); setSavedScanExcludes(val); }
+    }).catch(() => {});
 
     // Check Ollama status and load models
     invoke<{ status: string }>("check_ollama_status").then((s) => {
@@ -268,6 +280,77 @@ export function SettingsView() {
                 {selectedModel || "qwen3:4b"}
               </span>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Scan Settings */}
+      <section
+        className="rounded-xl p-6 border mb-6"
+        style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <ScanSearch size={18} style={{ color: "var(--accent)" }} />
+          <h2 className="font-semibold" style={{ color: "var(--text-primary)" }}>
+            Scan Settings
+          </h2>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm mb-1.5 block" style={{ color: "var(--text-secondary)" }}>
+              Scan Depth (how many folder levels deep)
+            </label>
+            <select
+              value={scanDepth}
+              onChange={async (e) => {
+                setScanDepth(e.target.value);
+                await invoke("save_setting", { key: "scan_depth", value: e.target.value }).catch(() => {});
+                setSavedScanDepth(e.target.value);
+                toast("success", `Scan depth set to ${e.target.value}`);
+              }}
+              className="px-3 py-2 rounded-lg text-sm border outline-none"
+              style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+            >
+              <option value="1">1 level</option>
+              <option value="2">2 levels</option>
+              <option value="3">3 levels</option>
+              <option value="5">5 levels (default)</option>
+              <option value="10">10 levels</option>
+              <option value="999">Unlimited</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-sm mb-1.5 block" style={{ color: "var(--text-secondary)" }}>
+              Exclude Folders (comma-separated)
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={scanExcludes}
+                onChange={(e) => setScanExcludes(e.target.value)}
+                placeholder="e.g. backups, old_files, temp"
+                className="flex-1 px-3 py-2 rounded-lg text-sm border outline-none"
+                style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+              />
+              <button
+                onClick={async () => {
+                  await invoke("save_setting", { key: "scan_excludes", value: scanExcludes.trim() }).catch(() => {});
+                  setSavedScanExcludes(scanExcludes.trim());
+                  toast("success", "Exclude patterns saved");
+                }}
+                disabled={scanExcludes === savedScanExcludes}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-opacity"
+                style={{ background: "var(--accent)", color: "white", opacity: scanExcludes !== savedScanExcludes ? 1 : 0.5 }}
+              >
+                <Save size={14} />
+                Save
+              </button>
+            </div>
+            <p className="text-xs mt-1.5" style={{ color: "var(--text-secondary)", opacity: 0.7 }}>
+              Hidden folders, node_modules, __pycache__, .git, target, dist, and build are always excluded.
+            </p>
           </div>
         </div>
       </section>

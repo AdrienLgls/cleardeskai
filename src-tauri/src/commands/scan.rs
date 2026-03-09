@@ -1,6 +1,6 @@
 use crate::models::{FileInfo, ScanResult, Classification};
 use crate::commands::license;
-use crate::ai;
+use crate::{ai, db};
 use walkdir::WalkDir;
 use std::fs;
 use chrono::{DateTime, Utc};
@@ -74,12 +74,32 @@ async fn classify_with_progress(
 fn collect_files(path: &str) -> Result<Vec<FileInfo>, String> {
     let mut files = Vec::new();
 
+    // Read configurable scan depth (default: 5)
+    let max_depth: usize = db::get_setting("scan_depth")
+        .ok()
+        .flatten()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(5);
+
+    // Read user-defined exclude patterns (comma-separated)
+    let extra_excludes: Vec<String> = db::get_setting("scan_excludes")
+        .ok()
+        .flatten()
+        .map(|v| v.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect())
+        .unwrap_or_default();
+
+    // Default excludes always applied
+    let default_excludes = ["node_modules", "__pycache__", "Thumbs.db", ".git", "target", "dist", "build"];
+
     let walker = WalkDir::new(path)
-        .max_depth(5)
+        .max_depth(max_depth)
         .into_iter()
         .filter_entry(|e| {
             let name = e.file_name().to_string_lossy();
-            !name.starts_with('.') && name != "node_modules" && name != "__pycache__" && name != "Thumbs.db"
+            if name.starts_with('.') { return false; }
+            if default_excludes.iter().any(|ex| name == *ex) { return false; }
+            if extra_excludes.iter().any(|ex| name == *ex) { return false; }
+            true
         });
 
     for entry in walker.filter_map(|e| e.ok()) {
