@@ -135,6 +135,15 @@ cleardeskai/
 - [x] Keyboard shortcuts (Ctrl+1-4, Ctrl+Z, Ctrl+/)
 - [x] Real-time scan progress
 - [x] License system (Free/Pro/Premium)
+- [x] Error boundary for crash recovery
+- [x] CSV export for scan results
+- [x] Native drag-and-drop (Tauri API)
+- [x] Recent folders for quick re-scan
+- [x] Apply progress bar with per-file tracking
+- [x] Undo from success screen
+- [x] OS-specific onboarding (Windows/macOS/Linux)
+- [x] Configurable min file size filter
+- [x] Landing page with interactive app preview
 - [ ] Near-duplicate detection
 - [ ] Semantic search
 - [ ] Custom organization rules/templates

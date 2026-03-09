@@ -65,6 +65,8 @@ interface AppState {
   toggleApproval: (index: number) => void;
   approveAll: () => void;
   rejectAll: () => void;
+  approveCategory: (category: string) => void;
+  rejectCategory: (category: string) => void;
   addOperation: (op: Operation) => void;
   markUndone: (operationId: string) => void;
   loadHistory: (operations: Operation[]) => void;
@@ -140,6 +142,26 @@ export const useAppStore = create<AppState>((set) => ({
       scan: {
         ...s.scan,
         results: s.scan.results.map((r) => ({ ...r, approved: false })),
+      },
+    })),
+
+  approveCategory: (category) =>
+    set((s) => ({
+      scan: {
+        ...s.scan,
+        results: s.scan.results.map((r) =>
+          r.category === category ? { ...r, approved: true } : r
+        ),
+      },
+    })),
+
+  rejectCategory: (category) =>
+    set((s) => ({
+      scan: {
+        ...s.scan,
+        results: s.scan.results.map((r) =>
+          r.category === category ? { ...r, approved: false } : r
+        ),
       },
     })),
 

@@ -40,6 +40,8 @@ export function ScanView() {
     toggleApproval,
     approveAll,
     rejectAll,
+    approveCategory,
+    rejectCategory,
     addOperation,
     updateResult,
     resetScan,
@@ -501,13 +503,30 @@ export function ScanView() {
                     </button>
                   ))}
                   {categoryFilter && (
-                    <button
-                      onClick={() => setCategoryFilter(null)}
-                      className="text-xs px-2 py-1 rounded-lg"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      Clear filter
-                    </button>
+                    <>
+                      <span className="text-xs text-txt-secondary mx-1" style={{ color: "var(--border)" }}>|</span>
+                      <button
+                        onClick={() => approveCategory(categoryFilter)}
+                        className="text-xs px-2 py-1 rounded-lg"
+                        style={{ color: "var(--success)" }}
+                      >
+                        Approve {categoryFilter}
+                      </button>
+                      <button
+                        onClick={() => rejectCategory(categoryFilter)}
+                        className="text-xs px-2 py-1 rounded-lg"
+                        style={{ color: "var(--danger)" }}
+                      >
+                        Reject {categoryFilter}
+                      </button>
+                      <button
+                        onClick={() => setCategoryFilter(null)}
+                        className="text-xs px-2 py-1 rounded-lg"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Clear filter
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
