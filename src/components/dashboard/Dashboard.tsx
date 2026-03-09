@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FolderOpen, ScanSearch, Clock, Sparkles, Settings, FileText, RotateCcw, Bot, Eye } from "lucide-react";
+import { FolderOpen, ScanSearch, Clock, Sparkles, Settings, FileText, RotateCcw, Bot, Eye, Zap } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../../stores/appStore";
 
@@ -13,6 +13,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
   const { stats, history, ollamaStatus, setOllamaStatus } = useAppStore();
   const [watchRunning, setWatchRunning] = useState(false);
   const [watchFolderCount, setWatchFolderCount] = useState(0);
+  const [recentFolders, setRecentFolders] = useState<[string, string, number][]>([]);
 
   const recentOps = history.slice(0, 5);
 
@@ -24,6 +25,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
       setWatchRunning(running);
       setWatchFolderCount(folders.length);
     }).catch(() => {});
+    invoke<[string, string, number][]>("get_recent_folders").then(setRecentFolders).catch(() => {});
   }, [setOllamaStatus]);
 
   return (
@@ -107,6 +109,32 @@ export function Dashboard({ onNavigate }: DashboardProps) {
         />
       </div>
 
+      {/* Quick Re-scan */}
+      {recentFolders.length > 0 && (
+        <>
+          <h2 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+            Quick Re-scan
+          </h2>
+          <div className="flex flex-wrap gap-2 mb-8">
+            {recentFolders.slice(0, 4).map(([path, , scanCount]) => {
+              const name = path.split(/[/\\]/).pop() || path;
+              return (
+                <button
+                  key={path}
+                  onClick={() => onNavigate("scan")}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm border transition-all hover-lift"
+                  style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+                >
+                  <Zap size={12} style={{ color: "var(--accent)" }} />
+                  <span className="font-medium" style={{ color: "var(--text-primary)" }}>{name}</span>
+                  <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{scanCount}x</span>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
       {/* Recent Activity */}
       <h2 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
         Recent Activity
@@ -116,10 +144,21 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           className="rounded-xl p-8 border text-center"
           style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
         >
-          <FileText size={32} className="mx-auto mb-3" style={{ color: "var(--text-secondary)" }} />
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            No activity yet. Scan a folder to get started.
+          <Sparkles size={32} className="mx-auto mb-3" style={{ color: "var(--accent)", opacity: 0.5 }} />
+          <p className="font-medium mb-1" style={{ color: "var(--text-primary)" }}>
+            Ready to organize
           </p>
+          <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
+            Scan your first folder and let AI sort your files.
+          </p>
+          <button
+            onClick={() => onNavigate("scan")}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
+            style={{ background: "var(--accent)" }}
+          >
+            <ScanSearch size={14} />
+            Start Scanning
+          </button>
         </div>
       ) : (
         <div className="space-y-2 stagger-in">
