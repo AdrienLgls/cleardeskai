@@ -283,6 +283,39 @@ export function ScanView() {
       {/* Results */}
       {applied === null && scan.results.length > 0 && !scan.scanning && (
         <>
+          {/* Category Summary */}
+          {(() => {
+            const cats = scan.results.reduce<Record<string, number>>((acc, r) => {
+              acc[r.category] = (acc[r.category] || 0) + 1;
+              return acc;
+            }, {});
+            const total = scan.results.length;
+            const catColors: Record<string, string> = {
+              Documents: "#6C5CE7", Images: "#00B894", Videos: "#E17055",
+              Music: "#FDCB6E", Code: "#0984E3", Archives: "#636E72",
+              PDFs: "#D63031", Invoices: "#00CEC9", Screenshots: "#A29BFE",
+              Spreadsheets: "#55EFC4", Other: "#B2BEC3",
+            };
+            return (
+              <div className="rounded-xl p-4 border mb-4 animate-fade-in" style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}>
+                <div className="flex h-2 rounded-full overflow-hidden mb-3" style={{ background: "var(--bg-tertiary)" }}>
+                  {Object.entries(cats).map(([cat, count]) => (
+                    <div key={cat} style={{ width: `${(count / total) * 100}%`, background: catColors[cat] || "#B2BEC3" }} />
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
+                    <div key={cat} className="flex items-center gap-1.5 text-xs">
+                      <div className="w-2 h-2 rounded-full" style={{ background: catColors[cat] || "#B2BEC3" }} />
+                      <span style={{ color: "var(--text-secondary)" }}>{cat}</span>
+                      <span className="font-medium" style={{ color: "var(--text-primary)" }}>{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
               Proposed Changes ({approvedCount}/{scan.results.length} approved)
@@ -357,7 +390,7 @@ export function ScanView() {
                         <span className="text-xs font-medium" style={{ color: "var(--accent)" }}>{r.category}</span>
                       </div>
                       <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                        {(r.file.size / 1024).toFixed(0)} KB
+                        {r.file.size >= 1048576 ? `${(r.file.size / 1048576).toFixed(1)} MB` : `${(r.file.size / 1024).toFixed(0)} KB`}
                       </span>
                     </div>
                     <p className="text-xs mt-1.5 mb-3" style={{ color: "var(--text-secondary)" }}>

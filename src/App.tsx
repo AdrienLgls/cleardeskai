@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Sidebar } from "./components/layout/Sidebar";
 import { Dashboard } from "./components/dashboard/Dashboard";
@@ -10,6 +10,7 @@ import { ToastProvider } from "./components/toast/ToastProvider";
 import { useAppStore } from "./stores/appStore";
 
 type View = "dashboard" | "scan" | "history" | "settings";
+const views: View[] = ["dashboard", "scan", "history", "settings"];
 
 interface BackendOperation {
   id: string;
@@ -25,6 +26,8 @@ function App() {
     return localStorage.getItem("cleardeskai_onboarded") === "true";
   });
   const loadHistory = useAppStore((s) => s.loadHistory);
+  const history = useAppStore((s) => s.history);
+  const markUndone = useAppStore((s) => s.markUndone);
 
   useEffect(() => {
     invoke<BackendOperation[]>("get_history")
@@ -43,6 +46,33 @@ function App() {
       })
       .catch(() => {});
   }, [loadHistory]);
+
+  // Keyboard shortcuts
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Don't trigger shortcuts when typing in inputs
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && e.key === "z") {
+      e.preventDefault();
+      const lastOp = history.find((op) => !op.undone);
+      if (lastOp) {
+        invoke("undo_operation", { operationId: lastOp.id })
+          .then(() => markUndone(lastOp.id))
+          .catch(() => {});
+      }
+    }
+    // Ctrl+1-4 for navigation
+    if (mod && e.key >= "1" && e.key <= "4") {
+      e.preventDefault();
+      setCurrentView(views[parseInt(e.key) - 1]);
+    }
+  }, [history, markUndone]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   function handleOnboardingComplete() {
     localStorage.setItem("cleardeskai_onboarded", "true");

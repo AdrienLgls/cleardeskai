@@ -52,9 +52,10 @@ export function Sidebar({ currentView, onNavigate }: SidebarProps) {
               style={{
                 background: active ? "var(--bg-tertiary)" : "transparent",
                 color: active ? "var(--text-primary)" : "var(--text-secondary)",
+                borderLeft: active ? "3px solid var(--accent)" : "3px solid transparent",
               }}
             >
-              <item.icon size={18} />
+              <item.icon size={18} style={active ? { color: "var(--accent)" } : {}} />
               {item.label}
             </button>
           );
