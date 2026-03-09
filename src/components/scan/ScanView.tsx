@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown, Clock, RotateCcw, ArrowUpDown } from "lucide-react";
 
 type SortKey = "name" | "confidence" | "size" | "category";
@@ -79,6 +79,61 @@ export function ScanView() {
   const [undoing, setUndoing] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("confidence");
   const [recentFolders, setRecentFolders] = useState<[string, string, number][]>([]);
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+
+  // Compute visible (filtered+sorted) result indices for keyboard nav
+  const visibleIndices = useMemo(() => {
+    return scan.results.map((r, i) => ({ r, i })).filter(({ r }) => {
+      if (categoryFilter && r.category !== categoryFilter) return false;
+      if (searchFilter) {
+        const q = searchFilter.toLowerCase();
+        return r.file.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q) || r.proposedFolder.toLowerCase().includes(q);
+      }
+      return true;
+    }).sort((a, b) => {
+      switch (sortKey) {
+        case "confidence": return b.r.confidence - a.r.confidence;
+        case "name": return a.r.file.name.localeCompare(b.r.file.name);
+        case "size": return b.r.file.size - a.r.file.size;
+        case "category": return a.r.category.localeCompare(b.r.category);
+        default: return 0;
+      }
+    }).map(({ i }) => i);
+  }, [scan.results, categoryFilter, searchFilter, sortKey]);
+
+  // Keyboard navigation for scan results
+  const handleResultsKeyDown = useCallback((e: KeyboardEvent) => {
+    if (scan.results.length === 0 || applying || applied !== null) return;
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+    if (visibleIndices.length === 0) return;
+
+    if (e.key === "ArrowDown" || e.key === "j") {
+      e.preventDefault();
+      setFocusedIndex((prev) => {
+        if (prev === null) return 0;
+        return Math.min(prev + 1, visibleIndices.length - 1);
+      });
+    } else if (e.key === "ArrowUp" || e.key === "k") {
+      e.preventDefault();
+      setFocusedIndex((prev) => {
+        if (prev === null) return 0;
+        return Math.max(prev - 1, 0);
+      });
+    } else if (e.key === " " && focusedIndex !== null) {
+      e.preventDefault();
+      const realIndex = visibleIndices[focusedIndex];
+      if (realIndex !== undefined) toggleApproval(realIndex);
+    } else if (e.key === "Enter" && focusedIndex !== null) {
+      e.preventDefault();
+      const realIndex = visibleIndices[focusedIndex];
+      if (realIndex !== undefined) setExpanded(expanded === realIndex ? null : realIndex);
+    }
+  }, [scan.results.length, applying, applied, visibleIndices, focusedIndex, toggleApproval, expanded]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleResultsKeyDown);
+    return () => window.removeEventListener("keydown", handleResultsKeyDown);
+  }, [handleResultsKeyDown]);
 
   useEffect(() => {
     invoke<{ status: string }>("check_ollama_status").then((s) => {
@@ -614,29 +669,19 @@ export function ScanView() {
           </div>
 
           <div className="space-y-2 mb-6 stagger-in">
-            {scan.results.map((r, i) => ({ r, i })).filter(({ r }) => {
-              if (categoryFilter && r.category !== categoryFilter) return false;
-              if (searchFilter) {
-                const q = searchFilter.toLowerCase();
-                return r.file.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q) || r.proposedFolder.toLowerCase().includes(q);
-              }
-              return true;
-            }).sort((a, b) => {
-              switch (sortKey) {
-                case "confidence": return b.r.confidence - a.r.confidence;
-                case "name": return a.r.file.name.localeCompare(b.r.file.name);
-                case "size": return b.r.file.size - a.r.file.size;
-                case "category": return a.r.category.localeCompare(b.r.category);
-                default: return 0;
-              }
-            }).map(({ r, i }) => (
+            {visibleIndices.map((i, vi) => {
+              const r = scan.results[i];
+              const isFocused = focusedIndex === vi;
+              return (
               <div
                 key={i}
                 className="rounded-lg border transition-colors overflow-hidden"
                 style={{
                   background: r.approved ? "var(--bg-secondary)" : "var(--bg-primary)",
-                  borderColor: r.approved ? "var(--border)" : "transparent",
+                  borderColor: isFocused ? "var(--accent)" : r.approved ? "var(--border)" : "transparent",
                   opacity: r.approved ? 1 : 0.5,
+                  outline: isFocused ? "2px solid var(--accent)" : "none",
+                  outlineOffset: "-2px",
                 }}
               >
                 <div className="flex items-center gap-3 px-4 py-3">
@@ -717,7 +762,7 @@ export function ScanView() {
                   </div>
                 )}
               </div>
-            ))}
+            ); })}
           </div>
 
           {/* Apply progress bar */}
