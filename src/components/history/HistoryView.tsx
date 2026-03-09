@@ -228,12 +228,11 @@ export function HistoryView() {
       )}
       {showClearConfirm && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50"
-          style={{ background: "rgba(0,0,0,0.5)" }}
+          className="fixed inset-0 flex items-center justify-center z-50 modal-backdrop"
           onClick={() => setShowClearConfirm(false)}
         >
           <div
-            className="rounded-xl p-6 border max-w-sm w-full mx-4 animate-fade-in"
+            className="rounded-xl p-6 border max-w-sm w-full mx-4 modal-content"
             style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
             onClick={(e) => e.stopPropagation()}
           >

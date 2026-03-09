@@ -182,3 +182,49 @@ body {
   100% { transform: scale(1); }
 }
 .animate-bounce-in { animation: bounce-in 0.4s ease-out forwards; }
+
+/* Modal backdrop + content */
+@keyframes modalBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modalContentIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-backdrop {
+  animation: modalBackdropIn 0.2s ease-out forwards;
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
+}
+.modal-content {
+  animation: modalContentIn 0.25s ease-out forwards;
+}
+
+/* Animated counter digits */
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* Category left border accent */
+.category-border-left {
+  border-left: 3px solid var(--category-color, var(--accent));
+}
+
+/* Smooth button press */
+.btn-press {
+  transition: transform 0.1s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+.btn-press:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.btn-press:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Sidebar active pill animation */
+@keyframes slideIndicator {
+  from { opacity: 0; transform: scaleY(0.5); }
+  to { opacity: 1; transform: scaleY(1); }
+}
+.nav-indicator {
+  animation: slideIndicator 0.2s ease-out forwards;
+}

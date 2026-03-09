@@ -460,24 +460,48 @@ export function ScanView() {
       {/* Scanning Progress */}
       {scan.scanning && (
         <div
-          className="rounded-xl p-6 border mb-6"
+          className="rounded-xl p-6 border mb-6 animate-fade-in"
           style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
         >
-          <div className="flex items-center gap-3 mb-3">
-            <Loader2 size={18} className="animate-spin" style={{ color: "var(--accent)" }} />
-            <span style={{ color: "var(--text-primary)" }}>
-              {scanPhase || `Scanning... ${scan.scannedFiles} / ${scan.totalFiles} files`}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Loader2 size={20} className="animate-spin" style={{ color: "var(--accent)" }} />
+                <div className="absolute inset-0 rounded-full animate-pulse-glow" />
+              </div>
+              <div>
+                <span className="font-medium" style={{ color: "var(--text-primary)" }}>
+                  {scanPhase || "Preparing scan..."}
+                </span>
+                {scan.totalFiles > 0 && (
+                  <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                    {scan.scannedFiles} of {scan.totalFiles} files processed
+                  </div>
+                )}
+              </div>
+            </div>
+            <span
+              className="text-2xl font-bold tabular-nums"
+              style={{ color: "var(--accent)" }}
+            >
+              {Math.round(scan.progress)}%
             </span>
           </div>
           <div
-            className="w-full h-2 rounded-full overflow-hidden"
+            className="w-full h-2.5 rounded-full overflow-hidden"
             style={{ background: "var(--bg-tertiary)" }}
           >
             <div
-              className="h-full rounded-full transition-all duration-300 progress-shimmer"
+              className="h-full rounded-full transition-all duration-500 ease-out progress-shimmer"
               style={{ width: `${scan.progress}%` }}
             />
           </div>
+          {scan.totalFiles > 0 && (
+            <div className="flex justify-between mt-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+              <span>{scan.scannedFiles === 0 ? "Collecting files..." : "AI classifying..."}</span>
+              <span>{scan.scannedFiles}/{scan.totalFiles}</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -675,13 +699,14 @@ export function ScanView() {
               return (
               <div
                 key={i}
-                className="rounded-lg border transition-colors overflow-hidden"
+                className="rounded-lg border transition-all duration-200 overflow-hidden"
                 style={{
                   background: r.approved ? "var(--bg-secondary)" : "var(--bg-primary)",
                   borderColor: isFocused ? "var(--accent)" : r.approved ? "var(--border)" : "transparent",
                   opacity: r.approved ? 1 : 0.5,
                   outline: isFocused ? "2px solid var(--accent)" : "none",
                   outlineOffset: "-2px",
+                  borderLeft: `3px solid ${getCategoryColor(r.category)}`,
                 }}
               >
                 <div className="flex items-center gap-3 px-4 py-3">
@@ -822,12 +847,11 @@ export function ScanView() {
       {/* Confirmation Dialog */}
       {showConfirm && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50"
-          style={{ background: "rgba(0,0,0,0.5)" }}
+          className="fixed inset-0 flex items-center justify-center z-50 modal-backdrop"
           onClick={() => setShowConfirm(false)}
         >
           <div
-            className="rounded-xl p-6 border max-w-md w-full mx-4 animate-fade-in"
+            className="rounded-xl p-6 border max-w-md w-full mx-4 modal-content"
             style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
             onClick={(e) => e.stopPropagation()}
           >

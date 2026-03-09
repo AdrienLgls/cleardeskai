@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FolderOpen, ScanSearch, Clock, Sparkles, Settings, FileText, RotateCcw, Bot, Eye, Zap } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../../stores/appStore";
@@ -203,6 +203,29 @@ export function Dashboard({ onNavigate }: DashboardProps) {
   );
 }
 
+function AnimatedNumber({ value }: { value: string }) {
+  const num = parseInt(value.replace(/[^0-9]/g, "")) || 0;
+  const suffix = value.replace(/[0-9,]/g, "");
+  const [display, setDisplay] = useState(0);
+  const raf = useRef<number>(0);
+
+  useEffect(() => {
+    if (num === 0) { setDisplay(0); return; }
+    const duration = 600;
+    const start = performance.now();
+    const animate = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      setDisplay(Math.round(eased * num));
+      if (t < 1) raf.current = requestAnimationFrame(animate);
+    };
+    raf.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf.current);
+  }, [num]);
+
+  return <>{display.toLocaleString()}{suffix}</>;
+}
+
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div
@@ -215,8 +238,8 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
           {label}
         </span>
       </div>
-      <div className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
-        {value}
+      <div className="text-2xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
+        <AnimatedNumber value={value} />
       </div>
     </div>
   );
