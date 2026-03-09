@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight } from "lucide-react";
+import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAppStore } from "../../stores/appStore";
@@ -21,6 +21,7 @@ export function ScanView() {
   } = useAppStore();
   const { toast } = useToast();
   const [applying, setApplying] = useState(false);
+  const [expanded, setExpanded] = useState<number | null>(null);
 
   async function handleSelectFolder() {
     const selected = await open({ directory: true, multiple: false });
@@ -167,37 +168,62 @@ export function ScanView() {
             {scan.results.map((r, i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 rounded-lg px-4 py-3 border transition-colors"
+                className="rounded-lg border transition-colors overflow-hidden"
                 style={{
                   background: r.approved ? "var(--bg-secondary)" : "var(--bg-primary)",
                   borderColor: r.approved ? "var(--border)" : "transparent",
                   opacity: r.approved ? 1 : 0.5,
                 }}
               >
-                <button onClick={() => toggleApproval(i)}>
-                  {r.approved ? (
-                    <Check size={18} style={{ color: "var(--success)" }} />
-                  ) : (
-                    <X size={18} style={{ color: "var(--danger)" }} />
-                  )}
-                </button>
-                <span className="text-sm font-mono truncate flex-1" style={{ color: "var(--text-secondary)" }}>
-                  {r.file.name}
-                </span>
-                <ArrowRight size={14} style={{ color: "var(--text-secondary)" }} />
-                <span className="text-sm font-mono truncate flex-1" style={{ color: "var(--text-primary)" }}>
-                  {r.proposedFolder}/{r.proposedName || r.file.name}
-                </span>
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full"
-                  style={{
-                    background: r.confidence > 0.8 ? "var(--success)" : r.confidence > 0.5 ? "var(--warning)" : "var(--danger)",
-                    color: "white",
-                    opacity: 0.9,
-                  }}
-                >
-                  {Math.round(r.confidence * 100)}%
-                </span>
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <button onClick={() => toggleApproval(i)}>
+                    {r.approved ? (
+                      <Check size={18} style={{ color: "var(--success)" }} />
+                    ) : (
+                      <X size={18} style={{ color: "var(--danger)" }} />
+                    )}
+                  </button>
+                  <span className="text-sm font-mono truncate flex-1" style={{ color: "var(--text-secondary)" }}>
+                    {r.file.name}
+                  </span>
+                  <ArrowRight size={14} style={{ color: "var(--text-secondary)" }} />
+                  <span className="text-sm font-mono truncate flex-1" style={{ color: "var(--text-primary)" }}>
+                    {r.proposedFolder}/{r.proposedName || r.file.name}
+                  </span>
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full"
+                    style={{
+                      background: r.confidence > 0.8 ? "var(--success)" : r.confidence > 0.5 ? "var(--warning)" : "var(--danger)",
+                      color: "white",
+                      opacity: 0.9,
+                    }}
+                  >
+                    {Math.round(r.confidence * 100)}%
+                  </span>
+                  <button
+                    onClick={() => setExpanded(expanded === i ? null : i)}
+                    className="transition-transform"
+                    style={{ color: "var(--text-secondary)", transform: expanded === i ? "rotate(180deg)" : "rotate(0)" }}
+                  >
+                    <ChevronDown size={14} />
+                  </button>
+                </div>
+                {expanded === i && (
+                  <div className="px-4 pb-3 pt-0 border-t" style={{ borderColor: "var(--border)" }}>
+                    <div className="flex items-center gap-4 mt-2">
+                      <div className="flex items-center gap-1.5">
+                        <Tag size={12} style={{ color: "var(--accent)" }} />
+                        <span className="text-xs font-medium" style={{ color: "var(--accent)" }}>{r.category}</span>
+                      </div>
+                      <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                        {(r.file.size / 1024).toFixed(0)} KB
+                      </span>
+                    </div>
+                    <p className="text-xs mt-1.5" style={{ color: "var(--text-secondary)" }}>
+                      {r.reasoning}
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>

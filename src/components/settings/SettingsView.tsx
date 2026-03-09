@@ -1,25 +1,41 @@
 import { useState, useEffect } from "react";
-import { Bot, Key, Eye, EyeOff, Save } from "lucide-react";
+import { Bot, Key, Eye, EyeOff, Save, Shield, Loader2, Trash2 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../../stores/appStore";
 import { useToast } from "../toast/ToastProvider";
 import { WatchPanel } from "../watch/WatchPanel";
 
+interface LicenseInfo {
+  tier: string;
+  valid: boolean;
+  scanLimit: number | null;
+  folderLimit: number | null;
+}
+
 export function SettingsView() {
-  const { ollamaStatus } = useAppStore();
+  const { ollamaStatus, setOllamaStatus } = useAppStore();
   const { toast } = useToast();
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [savedKey, setSavedKey] = useState("");
+  const [licenseKey, setLicenseKey] = useState("");
+  const [license, setLicense] = useState<LicenseInfo | null>(null);
+  const [activating, setActivating] = useState(false);
 
   useEffect(() => {
+    // Load API key
     invoke<string | null>("load_setting", { key: "cloud_api_key" }).then((val) => {
-      if (val) {
-        setApiKey(val);
-        setSavedKey(val);
-      }
+      if (val) { setApiKey(val); setSavedKey(val); }
     }).catch(() => {});
-  }, []);
+
+    // Load license info
+    invoke<LicenseInfo>("get_license_info").then(setLicense).catch(() => {});
+
+    // Check Ollama status
+    invoke<{ status: string }>("check_ollama_status").then((s) => {
+      setOllamaStatus(s.status as "running" | "not_installed" | "no_model");
+    }).catch(() => {});
+  }, [setOllamaStatus]);
 
   async function handleSaveKey() {
     try {
@@ -34,6 +50,30 @@ export function SettingsView() {
       }
     } catch (err) {
       toast("error", `Failed to save API key: ${err}`);
+    }
+  }
+
+  async function handleActivateLicense() {
+    if (!licenseKey.trim()) return;
+    setActivating(true);
+    try {
+      const info = await invoke<LicenseInfo>("activate_license", { key: licenseKey.trim() });
+      setLicense(info);
+      setLicenseKey("");
+      toast("success", `License activated — ${info.tier} tier`);
+    } catch (err) {
+      toast("error", `${err}`);
+    }
+    setActivating(false);
+  }
+
+  async function handleDeactivateLicense() {
+    try {
+      await invoke("deactivate_license");
+      setLicense({ tier: "free", valid: true, scanLimit: 50, folderLimit: 1 });
+      toast("info", "License deactivated");
+    } catch (err) {
+      toast("error", `Failed to deactivate: ${err}`);
     }
   }
 
@@ -53,6 +93,12 @@ export function SettingsView() {
     unknown: "Unknown",
   };
 
+  const tierColors: Record<string, string> = {
+    free: "var(--text-secondary)",
+    pro: "var(--success)",
+    premium: "var(--accent)",
+  };
+
   const keyChanged = apiKey !== savedKey;
 
   return (
@@ -60,6 +106,76 @@ export function SettingsView() {
       <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--text-primary)" }}>
         Settings
       </h1>
+
+      {/* License */}
+      <section
+        className="rounded-xl p-6 border mb-6"
+        style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <Shield size={18} style={{ color: "var(--accent)" }} />
+          <h2 className="font-semibold" style={{ color: "var(--text-primary)" }}>
+            License
+          </h2>
+          {license && (
+            <span
+              className="text-xs font-medium px-2 py-0.5 rounded-full uppercase"
+              style={{ color: tierColors[license.tier] || "var(--text-secondary)" }}
+            >
+              {license.tier}
+            </span>
+          )}
+        </div>
+
+        {license && license.tier !== "free" ? (
+          <div className="space-y-3">
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              Unlimited files and folders. All features unlocked.
+            </p>
+            <button
+              onClick={handleDeactivateLicense}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+              style={{ background: "var(--bg-tertiary)", color: "var(--danger)" }}
+            >
+              <Trash2 size={12} />
+              Deactivate License
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              Free tier: 50 files per scan, 1 folder. Upgrade to unlock unlimited.
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={licenseKey}
+                onChange={(e) => setLicenseKey(e.target.value.toUpperCase())}
+                placeholder="CDAI-PRO-XXXX-XXXX-XXXX"
+                className="flex-1 px-3 py-2 rounded-lg text-sm border outline-none font-mono"
+                style={{
+                  background: "var(--bg-tertiary)",
+                  borderColor: "var(--border)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <button
+                onClick={handleActivateLicense}
+                disabled={activating || !licenseKey.trim()}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
+                style={{
+                  background: "var(--accent)",
+                  color: "white",
+                  opacity: activating || !licenseKey.trim() ? 0.5 : 1,
+                }}
+              >
+                {activating ? <Loader2 size={14} className="animate-spin" /> : <Key size={14} />}
+                Activate
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* AI Engine */}
       <section
