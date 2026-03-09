@@ -5,9 +5,18 @@ use uuid::Uuid;
 use chrono::Utc;
 use std::fs;
 use std::path::Path;
+use tauri::AppHandle;
+
+#[derive(Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ApplyProgress {
+    processed: usize,
+    total: usize,
+    current_file: String,
+}
 
 #[tauri::command]
-pub async fn apply_changes(changes: Vec<FileChange>) -> Result<ApplyResult, String> {
+pub async fn apply_changes(app: AppHandle, changes: Vec<FileChange>) -> Result<ApplyResult, String> {
     let operation_id = Uuid::new_v4().to_string();
     let timestamp = Utc::now().to_rfc3339();
 
@@ -21,9 +30,19 @@ pub async fn apply_changes(changes: Vec<FileChange>) -> Result<ApplyResult, Stri
 
     let mut db_changes = Vec::new();
 
-    for change in &changes {
+    let total = changes.len();
+    for (i, change) in changes.iter().enumerate() {
         let source_path = Path::new(&change.source);
         let mut dest_path = std::path::PathBuf::from(&change.destination);
+        let file_name = source_path.file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_default();
+
+        let _ = tauri::Emitter::emit(&app, "apply-progress", ApplyProgress {
+            processed: i,
+            total,
+            current_file: file_name,
+        });
 
         // Create destination directory
         if let Some(parent) = dest_path.parent() {

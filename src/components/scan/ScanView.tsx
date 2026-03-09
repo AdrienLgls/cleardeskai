@@ -57,6 +57,7 @@ export function ScanView() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [currentModel, setCurrentModel] = useState("qwen3:4b");
   const [appliedSummary, setAppliedSummary] = useState<{ category: string; count: number; size: number }[]>([]);
+  const [applyProgress, setApplyProgress] = useState<{ processed: number; total: number; currentFile: string } | null>(null);
   const [recentFolders, setRecentFolders] = useState<[string, string, number][]>([]);
 
   useEffect(() => {
@@ -159,6 +160,13 @@ export function ScanView() {
     const approved = scan.results.filter((r) => r.approved);
     if (approved.length === 0) return;
     setApplying(true);
+    setApplyProgress({ processed: 0, total: approved.length, currentFile: "" });
+
+    const unlisten = await listen<{ processed: number; total: number; currentFile: string }>(
+      "apply-progress",
+      (event) => setApplyProgress(event.payload)
+    );
+
     try {
       const changes = approved.map((r) => ({
         source: r.file.path,
@@ -190,7 +198,9 @@ export function ScanView() {
     } catch (err) {
       toast("error", `Failed to apply changes: ${err}`);
     }
+    unlisten();
     setApplying(false);
+    setApplyProgress(null);
   }
 
   function exportCSV() {
@@ -611,6 +621,32 @@ export function ScanView() {
             ))}
           </div>
 
+          {/* Apply progress bar */}
+          {applying && applyProgress && (
+            <div
+              className="rounded-xl p-4 border mb-4 animate-fade-in"
+              style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <Loader2 size={14} className="animate-spin" style={{ color: "var(--accent)" }} />
+                <span className="text-sm" style={{ color: "var(--text-primary)" }}>
+                  Moving files... {applyProgress.processed}/{applyProgress.total}
+                </span>
+              </div>
+              <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-tertiary)" }}>
+                <div
+                  className="h-full rounded-full transition-all duration-200 progress-shimmer"
+                  style={{ width: `${applyProgress.total > 0 ? (applyProgress.processed / applyProgress.total) * 100 : 0}%` }}
+                />
+              </div>
+              {applyProgress.currentFile && (
+                <p className="text-xs mt-1.5 font-mono truncate" style={{ color: "var(--text-secondary)" }}>
+                  {applyProgress.currentFile}
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="flex gap-3">
             {approvedCount > 0 && (
               <button
@@ -629,6 +665,7 @@ export function ScanView() {
             )}
             <button
               onClick={resetScan}
+              disabled={applying}
               className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors"
               style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
             >
