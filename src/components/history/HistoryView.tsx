@@ -1,5 +1,5 @@
-import { RotateCcw, Clock, FileText, Loader2, ChevronDown, ArrowRight, Trash2, ExternalLink } from "lucide-react";
-import { useState } from "react";
+import { RotateCcw, Clock, FileText, Loader2, ChevronDown, ArrowRight, Trash2, ExternalLink, Search, X } from "lucide-react";
+import { useState, useMemo } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../../stores/appStore";
 import { useToast } from "../toast/ToastProvider";
@@ -11,6 +11,24 @@ export function HistoryView() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "undone">("all");
+
+  const filtered = useMemo(() => {
+    let ops = history;
+    if (search) {
+      const q = search.toLowerCase();
+      ops = ops.filter((op) =>
+        op.description.toLowerCase().includes(q) ||
+        op.changes.some((c) =>
+          c.source.toLowerCase().includes(q) || c.destination.toLowerCase().includes(q)
+        )
+      );
+    }
+    if (statusFilter === "active") ops = ops.filter((op) => !op.undone);
+    if (statusFilter === "undone") ops = ops.filter((op) => op.undone);
+    return ops;
+  }, [history, search, statusFilter]);
 
   async function handleUndo(operationId: string) {
     setUndoing(operationId);
@@ -64,6 +82,45 @@ export function HistoryView() {
         )}
       </div>
 
+      {history.length > 0 && (
+        <div className="flex gap-3 mb-6">
+          <div
+            className="flex items-center gap-2 flex-1 px-3 py-2 rounded-xl border"
+            style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+          >
+            <Search size={14} style={{ color: "var(--text-secondary)" }} />
+            <input
+              type="text"
+              placeholder="Search operations or filenames..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-transparent outline-none text-sm flex-1"
+              style={{ color: "var(--text-primary)" }}
+            />
+            {search && (
+              <button onClick={() => setSearch("")}>
+                <X size={14} style={{ color: "var(--text-secondary)" }} />
+              </button>
+            )}
+          </div>
+          <div className="flex rounded-xl border overflow-hidden" style={{ borderColor: "var(--border)" }}>
+            {(["all", "active", "undone"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className="px-3 py-2 text-xs font-medium capitalize transition-colors"
+                style={{
+                  background: statusFilter === s ? "var(--accent)" : "var(--bg-secondary)",
+                  color: statusFilter === s ? "white" : "var(--text-secondary)",
+                }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {history.length === 0 ? (
         <div
           className="rounded-xl p-12 border text-center"
@@ -74,7 +131,18 @@ export function HistoryView() {
         </div>
       ) : (
         <div className="space-y-3">
-          {history.map((op) => (
+          {filtered.length === 0 && (
+            <div
+              className="rounded-xl p-8 border text-center"
+              style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+            >
+              <Search size={32} className="mx-auto mb-3" style={{ color: "var(--text-secondary)", opacity: 0.5 }} />
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                No matching operations found
+              </p>
+            </div>
+          )}
+          {filtered.map((op) => (
             <div
               key={op.id}
               className="rounded-xl border transition-opacity overflow-hidden"
