@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Sparkles, Download, CheckCircle, XCircle, Loader2, ArrowRight, FolderOpen } from "lucide-react";
+import { Sparkles, Download, CheckCircle, XCircle, Loader2, ArrowRight, FolderOpen, Monitor, Laptop, Terminal } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
+import { platform } from "@tauri-apps/plugin-os";
 import { useAppStore } from "../../stores/appStore";
 
 type Step = "welcome" | "check_ollama" | "download_model" | "select_folder" | "ready";
+type Platform = "windows" | "macos" | "linux";
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -14,6 +16,16 @@ export function OnboardingView({ onComplete }: OnboardingProps) {
   const { ollamaStatus, setOllamaStatus } = useAppStore();
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [os] = useState<Platform>(() => {
+    try {
+      const p = platform();
+      if (p === "windows") return "windows";
+      if (p === "macos") return "macos";
+      return "linux";
+    } catch {
+      return "linux";
+    }
+  });
 
   async function checkOllama() {
     setStep("check_ollama");
@@ -77,9 +89,57 @@ export function OnboardingView({ onComplete }: OnboardingProps) {
                 <h2 className="text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>Ollama Not Found</h2>
                 <p className="mb-6" style={{ color: "var(--text-secondary)" }}>ClearDeskAI needs Ollama to run AI locally. Install it first, then come back.</p>
                 <div className="rounded-xl p-4 mb-6 text-left" style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
-                  <p className="text-sm font-mono mb-2" style={{ color: "var(--text-primary)" }}># Install Ollama:</p>
-                  <p className="text-sm font-mono" style={{ color: "var(--accent)" }}>curl -fsSL https://ollama.com/install.sh | sh</p>
-                  <p className="text-xs mt-2" style={{ color: "var(--text-secondary)" }}>Or visit ollama.com for Windows/Mac installers</p>
+                  {os === "windows" && (
+                    <>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Monitor size={14} style={{ color: "var(--accent)" }} />
+                        <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Windows</span>
+                      </div>
+                      <p className="text-sm mb-2" style={{ color: "var(--text-secondary)" }}>
+                        Download and run the Ollama installer:
+                      </p>
+                      <button
+                        onClick={() => {
+                          import("@tauri-apps/plugin-shell").then(({ open }) => open("https://ollama.com/download/windows"));
+                        }}
+                        className="text-sm font-medium px-3 py-1.5 rounded-lg"
+                        style={{ background: "var(--accent)", color: "white" }}
+                      >
+                        Download for Windows
+                      </button>
+                    </>
+                  )}
+                  {os === "macos" && (
+                    <>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Laptop size={14} style={{ color: "var(--accent)" }} />
+                        <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>macOS</span>
+                      </div>
+                      <p className="text-sm mb-2" style={{ color: "var(--text-secondary)" }}>
+                        Download the app or install via Homebrew:
+                      </p>
+                      <p className="text-sm font-mono mb-2" style={{ color: "var(--accent)" }}>brew install ollama</p>
+                      <button
+                        onClick={() => {
+                          import("@tauri-apps/plugin-shell").then(({ open }) => open("https://ollama.com/download/mac"));
+                        }}
+                        className="text-sm font-medium px-3 py-1.5 rounded-lg"
+                        style={{ background: "var(--accent)", color: "white" }}
+                      >
+                        Download for macOS
+                      </button>
+                    </>
+                  )}
+                  {os === "linux" && (
+                    <>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Terminal size={14} style={{ color: "var(--accent)" }} />
+                        <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Linux</span>
+                      </div>
+                      <p className="text-sm mb-2" style={{ color: "var(--text-secondary)" }}>Run this command in your terminal:</p>
+                      <p className="text-sm font-mono" style={{ color: "var(--accent)" }}>curl -fsSL https://ollama.com/install.sh | sh</p>
+                    </>
+                  )}
                 </div>
                 <button onClick={checkOllama} className="px-6 py-3 rounded-xl font-semibold text-white" style={{ background: "var(--accent)" }}>Check Again</button>
               </>
