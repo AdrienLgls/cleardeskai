@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown, Clock } from "lucide-react";
+import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown, Clock, RotateCcw } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
@@ -43,6 +43,7 @@ export function ScanView() {
     addOperation,
     updateResult,
     resetScan,
+    markUndone,
   } = useAppStore();
   const { toast } = useToast();
   const { ollamaStatus, setOllamaStatus } = useAppStore();
@@ -58,6 +59,8 @@ export function ScanView() {
   const [currentModel, setCurrentModel] = useState("qwen3:4b");
   const [appliedSummary, setAppliedSummary] = useState<{ category: string; count: number; size: number }[]>([]);
   const [applyProgress, setApplyProgress] = useState<{ processed: number; total: number; currentFile: string } | null>(null);
+  const [lastOperationId, setLastOperationId] = useState<string | null>(null);
+  const [undoing, setUndoing] = useState(false);
   const [recentFolders, setRecentFolders] = useState<[string, string, number][]>([]);
 
   useEffect(() => {
@@ -193,6 +196,7 @@ export function ScanView() {
           .map(([category, { count, size }]) => ({ category, count, size }))
           .sort((a, b) => b.count - a.count)
       );
+      setLastOperationId(result.operationId);
       setApplied(approved.length);
       toast("success", `${approved.length} files organized successfully`);
     } catch (err) {
@@ -404,7 +408,7 @@ export function ScanView() {
             {applied} files organized!
           </h2>
           <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
-            All changes have been applied. You can undo this from the History page.
+            All changes have been applied successfully.
           </p>
           {appliedSummary.length > 0 && (
             <div className="flex flex-wrap justify-center gap-3 mb-6">
@@ -422,14 +426,38 @@ export function ScanView() {
               ))}
             </div>
           )}
-          <button
-            onClick={() => { resetScan(); setApplied(null); setAppliedSummary([]); }}
-            className="flex items-center gap-2 mx-auto px-5 py-2.5 rounded-lg font-medium text-sm"
-            style={{ background: "var(--accent)", color: "white" }}
-          >
-            <FolderOpen size={16} />
-            Scan Another Folder
-          </button>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={() => { resetScan(); setApplied(null); setAppliedSummary([]); setLastOperationId(null); }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm"
+              style={{ background: "var(--accent)", color: "white" }}
+            >
+              <FolderOpen size={16} />
+              Scan Another Folder
+            </button>
+            {lastOperationId && (
+              <button
+                onClick={async () => {
+                  setUndoing(true);
+                  try {
+                    await invoke("undo_operation", { operationId: lastOperationId });
+                    markUndone(lastOperationId);
+                    toast("success", "Changes undone — files restored");
+                    setLastOperationId(null);
+                  } catch (err) {
+                    toast("error", `Undo failed: ${err}`);
+                  }
+                  setUndoing(false);
+                }}
+                disabled={undoing}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm"
+                style={{ background: "var(--bg-tertiary)", color: "var(--warning)" }}
+              >
+                {undoing ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
+                Undo
+              </button>
+            )}
+          </div>
         </div>
       )}
 
