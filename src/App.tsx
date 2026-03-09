@@ -45,6 +45,9 @@ function App() {
         );
       })
       .catch(() => {});
+
+    // Auto-resume watch mode if enabled
+    invoke<boolean>("auto_resume_watch").catch(() => {});
   }, [loadHistory]);
 
   // Keyboard shortcuts

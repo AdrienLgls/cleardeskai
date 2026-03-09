@@ -11,6 +11,7 @@ export function WatchPanel() {
   const [interval, setIntervalVal] = useState(60);
   const [loading, setLoading] = useState(false);
   const [detectedCount, setDetectedCount] = useState(0);
+  const [autoResume, setAutoResume] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -18,6 +19,10 @@ export function WatchPanel() {
     // Load saved watched folders
     invoke<string[]>("get_saved_watched_folders").then((saved) => {
       if (saved.length > 0) setFolders(saved);
+    }).catch(() => {});
+    // Load auto-resume setting
+    invoke<string | null>("load_setting", { key: "watch_auto_resume" }).then((val) => {
+      setAutoResume(val === "true");
     }).catch(() => {});
   }, []);
 
@@ -104,7 +109,7 @@ export function WatchPanel() {
           </div>
         ))}
       </div>
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2 mb-4">
         <button onClick={addFolder} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium" style={{ background: "var(--bg-tertiary)", color: "var(--text-primary)" }}>
           <FolderPlus size={14} /> Add Folder
         </button>
@@ -115,6 +120,22 @@ export function WatchPanel() {
           <option value={600}>Every 10m</option>
         </select>
       </div>
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={autoResume}
+          onChange={async (e) => {
+            const val = e.target.checked;
+            setAutoResume(val);
+            await invoke("save_setting", { key: "watch_auto_resume", value: val ? "true" : "false" }).catch(() => {});
+          }}
+          className="w-4 h-4 rounded accent-current"
+          style={{ accentColor: "var(--accent)" }}
+        />
+        <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          Auto-resume on app startup
+        </span>
+      </label>
     </section>
   );
 }

@@ -127,3 +127,30 @@ pub async fn remove_watched_folder(path: String) -> Result<(), String> {
     db::remove_watched_folder(&path).map_err(|e| e.to_string())?;
     Ok(())
 }
+
+#[tauri::command]
+pub async fn auto_resume_watch(
+    app: AppHandle,
+    state: State<'_, WatchState>,
+) -> Result<bool, String> {
+    let enabled = db::get_setting("watch_auto_resume")
+        .ok()
+        .flatten()
+        .map(|v| v == "true")
+        .unwrap_or(false);
+
+    if !enabled || state.running.load(Ordering::Relaxed) {
+        return Ok(false);
+    }
+
+    let saved = db::get_watched_folders().map_err(|e| e.to_string())?;
+    if saved.is_empty() {
+        return Ok(false);
+    }
+
+    let folders: Vec<String> = saved.iter().map(|(p, _, _)| p.clone()).collect();
+    let interval = saved.first().map(|(_, i, _)| *i as u64).unwrap_or(60);
+
+    start_watch(app, state, folders, interval).await?;
+    Ok(true)
+}
