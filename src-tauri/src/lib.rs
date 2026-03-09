@@ -4,11 +4,12 @@ mod db;
 mod ai;
 
 use tauri::Manager;
-use commands::{scan, organize, history, ai_status};
+use commands::{scan, organize, history, ai_status, watch};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(watch::WatchState::default())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
@@ -31,6 +32,9 @@ pub fn run() {
             history::get_history,
             ai_status::check_ollama_status,
             ai_status::setup_ollama,
+            watch::start_watch,
+            watch::stop_watch,
+            watch::get_watch_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
