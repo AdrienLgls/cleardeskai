@@ -52,6 +52,15 @@ struct OllamaRequest {
     prompt: String,
     stream: bool,
     format: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    options: Option<OllamaOptions>,
+}
+
+#[derive(Serialize)]
+struct OllamaOptions {
+    /// Disable "thinking" mode in qwen3 models — drastically reduces response time
+    #[serde(skip_serializing_if = "Option::is_none")]
+    think: Option<bool>,
 }
 
 #[derive(Deserialize)]
@@ -134,8 +143,7 @@ async fn classify_batch(client: &Client, files: &[FileInfo], base_folder: &str) 
     }).collect();
 
     let prompt = format!(
-        r#"/no_think
-You are a file organization AI. Classify these files into a logical folder structure.
+        r#"You are a file organization AI. Classify these files into a logical folder structure.
 
 Base folder: {base_folder}
 
@@ -162,11 +170,19 @@ Respond ONLY with valid JSON, no markdown."#,
         files_list = files_desc.join("\n")
     );
 
+    let model = get_model();
+    // Disable thinking for qwen3 models to avoid 90s+ delays
+    let is_qwen3 = model.starts_with("qwen3");
     let request = OllamaRequest {
-        model: get_model(),
+        model,
         prompt,
         stream: false,
         format: "json".to_string(),
+        options: if is_qwen3 {
+            Some(OllamaOptions { think: Some(false) })
+        } else {
+            None
+        },
     };
 
     let resp = client
