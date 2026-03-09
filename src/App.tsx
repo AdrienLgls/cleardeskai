@@ -7,6 +7,7 @@ import { HistoryView } from "./components/history/HistoryView";
 import { SettingsView } from "./components/settings/SettingsView";
 import { OnboardingView } from "./components/onboarding/OnboardingView";
 import { ToastProvider } from "./components/toast/ToastProvider";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useAppStore } from "./stores/appStore";
 
 type View = "dashboard" | "scan" | "history" | "settings";
@@ -106,12 +107,14 @@ function App() {
       <div className="flex h-screen w-screen">
         <Sidebar currentView={currentView} onNavigate={setCurrentView} />
         <main className="flex-1 overflow-auto" style={{ background: "var(--bg-primary)" }}>
-          <div key={currentView} className="animate-fade-in">
-            {currentView === "dashboard" && <Dashboard onNavigate={setCurrentView} />}
-            {currentView === "scan" && <ScanView />}
-            {currentView === "history" && <HistoryView />}
-            {currentView === "settings" && <SettingsView />}
-          </div>
+          <ErrorBoundary>
+            <div key={currentView} className="animate-fade-in">
+              {currentView === "dashboard" && <Dashboard onNavigate={setCurrentView} />}
+              {currentView === "scan" && <ScanView />}
+              {currentView === "history" && <HistoryView />}
+              {currentView === "settings" && <SettingsView />}
+            </div>
+          </ErrorBoundary>
         </main>
       </div>
       {showShortcuts && <ShortcutsOverlay onClose={() => setShowShortcuts(false)} />}

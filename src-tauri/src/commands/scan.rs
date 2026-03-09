@@ -88,6 +88,13 @@ fn collect_files(path: &str) -> Result<Vec<FileInfo>, String> {
         .map(|v| v.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect())
         .unwrap_or_default();
 
+    // Read configurable min file size in bytes (default: 1 = skip empty only)
+    let min_size: u64 = db::get_setting("scan_min_size")
+        .ok()
+        .flatten()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(1);
+
     // Default excludes always applied
     let default_excludes = ["node_modules", "__pycache__", "Thumbs.db", ".git", "target", "dist", "build"];
 
@@ -110,7 +117,7 @@ fn collect_files(path: &str) -> Result<Vec<FileInfo>, String> {
         let file_path = entry.path();
         let metadata = fs::metadata(file_path).map_err(|e| e.to_string())?;
 
-        if metadata.len() == 0 {
+        if metadata.len() < min_size {
             continue;
         }
 

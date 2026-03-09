@@ -26,6 +26,7 @@ export function SettingsView() {
   const [loadingModels, setLoadingModels] = useState(false);
   const [scanDepth, setScanDepth] = useState("5");
   const [scanExcludes, setScanExcludes] = useState("");
+  const [scanMinSize, setScanMinSize] = useState("1");
   const [savedScanDepth, setSavedScanDepth] = useState("5");
   const [savedScanExcludes, setSavedScanExcludes] = useState("");
 
@@ -50,6 +51,9 @@ export function SettingsView() {
     }).catch(() => {});
     invoke<string | null>("load_setting", { key: "scan_excludes" }).then((val) => {
       if (val) { setScanExcludes(val); setSavedScanExcludes(val); }
+    }).catch(() => {});
+    invoke<string | null>("load_setting", { key: "scan_min_size" }).then((val) => {
+      if (val) setScanMinSize(val);
     }).catch(() => {});
 
     // Check Ollama status and load models
@@ -318,6 +322,28 @@ export function SettingsView() {
               <option value="5">5 levels (default)</option>
               <option value="10">10 levels</option>
               <option value="999">Unlimited</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-sm mb-1.5 block" style={{ color: "var(--text-secondary)" }}>
+              Min File Size (skip small/temp files)
+            </label>
+            <select
+              value={scanMinSize}
+              onChange={async (e) => {
+                setScanMinSize(e.target.value);
+                await invoke("save_setting", { key: "scan_min_size", value: e.target.value }).catch(() => {});
+                toast("success", "Min file size updated");
+              }}
+              className="px-3 py-2 rounded-lg text-sm border outline-none"
+              style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+            >
+              <option value="1">No minimum (skip empty only)</option>
+              <option value="100">100 bytes</option>
+              <option value="1024">1 KB</option>
+              <option value="10240">10 KB</option>
+              <option value="102400">100 KB</option>
             </select>
           </div>
 
