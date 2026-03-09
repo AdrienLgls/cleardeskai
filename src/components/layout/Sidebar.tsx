@@ -74,7 +74,8 @@ export function Sidebar({ currentView, onNavigate }: SidebarProps) {
       </div>
 
       <div className="px-5 py-4 text-xs" style={{ color: "var(--text-secondary)" }}>
-        ClearDeskAI v1.0.0
+        <span>ClearDeskAI v1.0.0</span>
+        <span className="ml-2 opacity-60">Ctrl+/ for shortcuts</span>
       </div>
     </aside>
   );
