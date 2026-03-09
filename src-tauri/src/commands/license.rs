@@ -60,6 +60,14 @@ pub async fn deactivate_license() -> Result<(), String> {
     Ok(())
 }
 
+pub fn get_file_limit() -> Option<usize> {
+    let key = db::get_setting("license_key").ok().flatten();
+    match key {
+        Some(k) if validate_key(&k) == "pro" || validate_key(&k) == "premium" => None,
+        _ => Some(FREE_SCAN_LIMIT),
+    }
+}
+
 fn validate_key(key: &str) -> &str {
     // Key format: CDAI-PRO-XXXX-XXXX-XXXX or CDAI-PREM-XXXX-XXXX-XXXX
     // This is a simple local validation. In production, validate against Keygen.sh API.

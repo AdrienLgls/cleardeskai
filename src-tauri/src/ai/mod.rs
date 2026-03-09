@@ -1,9 +1,12 @@
 use crate::models::{FileInfo, Classification};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 
 const OLLAMA_URL: &str = "http://localhost:11434";
 const DEFAULT_MODEL: &str = "qwen3:4b";
+const BATCH_SIZE: usize = 20;
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(120);
 
 #[derive(Serialize)]
 struct OllamaRequest {
@@ -33,7 +36,11 @@ struct AiClassifications {
 }
 
 pub async fn check_status() -> (String, Option<String>, Option<String>) {
-    let client = Client::new();
+    let client = Client::builder()
+        .timeout(Duration::from_secs(5))
+        .build()
+        .unwrap_or_default();
+
     let version = match client.get(format!("{}/api/version", OLLAMA_URL)).send().await {
         Ok(resp) => {
             if resp.status().is_success() {
@@ -66,8 +73,22 @@ pub async fn check_status() -> (String, Option<String>, Option<String>) {
 }
 
 pub async fn classify_files(files: &[FileInfo], base_folder: &str) -> Result<Vec<Classification>, String> {
-    let client = Client::new();
+    let client = Client::builder()
+        .timeout(REQUEST_TIMEOUT)
+        .build()
+        .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 
+    let mut all_classifications = Vec::new();
+
+    for chunk in files.chunks(BATCH_SIZE) {
+        let batch_result = classify_batch(&client, chunk, base_folder).await?;
+        all_classifications.extend(batch_result);
+    }
+
+    Ok(all_classifications)
+}
+
+async fn classify_batch(client: &Client, files: &[FileInfo], base_folder: &str) -> Result<Vec<Classification>, String> {
     let files_desc: Vec<String> = files.iter().enumerate().map(|(i, f)| {
         let preview = f.content_preview.as_deref().unwrap_or("(no preview)");
         format!(
@@ -117,7 +138,13 @@ Respond ONLY with valid JSON, no markdown."#,
         .json(&request)
         .send()
         .await
-        .map_err(|e| format!("Ollama request failed: {}", e))?;
+        .map_err(|e| {
+            if e.is_timeout() {
+                "AI classification timed out. Try scanning fewer files or check if Ollama is running.".to_string()
+            } else {
+                format!("Ollama request failed: {}", e)
+            }
+        })?;
 
     let body: OllamaResponse = resp
         .json()
@@ -150,7 +177,11 @@ Respond ONLY with valid JSON, no markdown."#,
 }
 
 pub async fn pull_model() -> Result<(), String> {
-    let client = Client::new();
+    let client = Client::builder()
+        .timeout(Duration::from_secs(600))
+        .build()
+        .map_err(|e| format!("Failed to create client: {}", e))?;
+
     client
         .post(format!("{}/api/pull", OLLAMA_URL))
         .json(&serde_json::json!({ "name": DEFAULT_MODEL, "stream": false }))

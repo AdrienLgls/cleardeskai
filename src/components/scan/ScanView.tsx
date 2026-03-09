@@ -17,6 +17,7 @@ export function ScanView() {
     approveAll,
     rejectAll,
     addOperation,
+    resetScan,
   } = useAppStore();
   const { toast } = useToast();
   const [applying, setApplying] = useState(false);
@@ -201,21 +202,31 @@ export function ScanView() {
             ))}
           </div>
 
-          {approvedCount > 0 && (
+          <div className="flex gap-3">
+            {approvedCount > 0 && (
+              <button
+                onClick={handleApply}
+                disabled={applying}
+                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-colors"
+                style={{ background: "var(--accent)", color: "white" }}
+              >
+                {applying ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <ChevronRight size={18} />
+                )}
+                Apply {approvedCount} Changes
+              </button>
+            )}
             <button
-              onClick={handleApply}
-              disabled={applying}
-              className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-colors"
-              style={{ background: "var(--accent)", color: "white" }}
+              onClick={resetScan}
+              className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors"
+              style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
             >
-              {applying ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <ChevronRight size={18} />
-              )}
-              Apply {approvedCount} Changes
+              <FolderOpen size={16} />
+              New Scan
             </button>
-          )}
+          </div>
         </>
       )}
     </div>

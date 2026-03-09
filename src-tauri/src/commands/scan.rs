@@ -1,4 +1,5 @@
 use crate::models::{FileInfo, ScanResult};
+use crate::commands::license;
 use crate::ai;
 use walkdir::WalkDir;
 use std::fs;
@@ -6,7 +7,15 @@ use chrono::{DateTime, Utc};
 
 #[tauri::command]
 pub async fn scan_folder(path: String) -> Result<ScanResult, String> {
-    let files = collect_files(&path)?;
+    let mut files = collect_files(&path)?;
+
+    // Enforce free tier file limit
+    if let Some(limit) = license::get_file_limit() {
+        if files.len() > limit {
+            files.truncate(limit);
+        }
+    }
+
     let classifications = ai::classify_files(&files, &path).await?;
 
     Ok(ScanResult {
