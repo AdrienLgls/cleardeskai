@@ -5,7 +5,6 @@ use std::time::Duration;
 
 const OLLAMA_URL: &str = "http://localhost:11434";
 const DEFAULT_MODEL: &str = "qwen3:4b";
-const BATCH_SIZE: usize = 20;
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(120);
 
 #[derive(Serialize)]
@@ -72,20 +71,14 @@ pub async fn check_status() -> (String, Option<String>, Option<String>) {
     }
 }
 
-pub async fn classify_files(files: &[FileInfo], base_folder: &str) -> Result<Vec<Classification>, String> {
+/// Classify a single batch of files
+pub async fn classify_batch_public(files: &[FileInfo], base_folder: &str) -> Result<Vec<Classification>, String> {
     let client = Client::builder()
         .timeout(REQUEST_TIMEOUT)
         .build()
         .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 
-    let mut all_classifications = Vec::new();
-
-    for chunk in files.chunks(BATCH_SIZE) {
-        let batch_result = classify_batch(&client, chunk, base_folder).await?;
-        all_classifications.extend(batch_result);
-    }
-
-    Ok(all_classifications)
+    classify_batch(&client, files, base_folder).await
 }
 
 async fn classify_batch(client: &Client, files: &[FileInfo], base_folder: &str) -> Result<Vec<Classification>, String> {

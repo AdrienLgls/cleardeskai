@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAppStore } from "../../stores/appStore";
 import { useToast } from "../toast/ToastProvider";
@@ -27,6 +28,7 @@ export function ScanView() {
   const [expanded, setExpanded] = useState<number | null>(null);
   const [pullingModel, setPullingModel] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [scanPhase, setScanPhase] = useState<string>("");
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
@@ -71,6 +73,22 @@ export function ScanView() {
   async function handleScan() {
     if (!scan.selectedFolder) return;
     startScan();
+    setScanPhase("Scanning files...");
+
+    // Listen for progress events from backend
+    const unlisten = await listen<{ phase: string; processed: number; total: number }>(
+      "scan-progress",
+      (event) => {
+        const { phase, processed, total } = event.payload;
+        setScanProgress(processed, total);
+        if (phase === "collecting") {
+          setScanPhase(`Found ${total} files, starting AI classification...`);
+        } else if (phase === "classifying") {
+          setScanPhase(`Classifying... ${processed}/${total} files`);
+        }
+      }
+    );
+
     try {
       const result = await invoke<{ files: number; classifications: Classification[] }>(
         "scan_folder",
@@ -84,8 +102,17 @@ export function ScanView() {
       toast("success", `Found ${result.classifications.length} files to organize`);
     } catch (err) {
       finishScan();
-      toast("error", `Scan failed: ${err}`);
+      const errStr = String(err);
+      if (errStr.includes("timed out")) {
+        toast("error", "AI classification timed out. Try scanning fewer files or check Ollama.");
+      } else if (errStr.includes("Ollama") || errStr.includes("Connection refused")) {
+        toast("error", "Ollama is not running. Start it and try again.");
+      } else {
+        toast("error", `Scan failed: ${errStr}`);
+      }
     }
+    setScanPhase("");
+    unlisten();
   }
 
   async function handleApply() {
@@ -239,7 +266,7 @@ export function ScanView() {
           <div className="flex items-center gap-3 mb-3">
             <Loader2 size={18} className="animate-spin" style={{ color: "var(--accent)" }} />
             <span style={{ color: "var(--text-primary)" }}>
-              Scanning... {scan.scannedFiles} / {scan.totalFiles} files
+              {scanPhase || `Scanning... ${scan.scannedFiles} / ${scan.totalFiles} files`}
             </span>
           </div>
           <div

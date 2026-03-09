@@ -1,13 +1,29 @@
-use crate::models::{FileInfo, ScanResult};
+use crate::models::{FileInfo, ScanResult, Classification};
 use crate::commands::license;
 use crate::ai;
 use walkdir::WalkDir;
 use std::fs;
 use chrono::{DateTime, Utc};
+use tauri::AppHandle;
+
+#[derive(Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ScanProgress {
+    phase: String,
+    processed: usize,
+    total: usize,
+}
 
 #[tauri::command]
-pub async fn scan_folder(path: String) -> Result<ScanResult, String> {
+pub async fn scan_folder(app: AppHandle, path: String) -> Result<ScanResult, String> {
     let mut files = collect_files(&path)?;
+
+    // Emit file count so frontend shows "Found X files, classifying..."
+    let _ = tauri::Emitter::emit(&app, "scan-progress", ScanProgress {
+        phase: "collecting".to_string(),
+        processed: files.len(),
+        total: files.len(),
+    });
 
     // Enforce free tier file limit
     if let Some(limit) = license::get_file_limit() {
@@ -16,12 +32,43 @@ pub async fn scan_folder(path: String) -> Result<ScanResult, String> {
         }
     }
 
-    let classifications = ai::classify_files(&files, &path).await?;
+    let classifications = classify_with_progress(&app, &files, &path).await?;
 
     Ok(ScanResult {
         files: files.len(),
         classifications,
     })
+}
+
+async fn classify_with_progress(
+    app: &AppHandle,
+    files: &[FileInfo],
+    base_folder: &str,
+) -> Result<Vec<Classification>, String> {
+    let batch_size = 20;
+    let total = files.len();
+    let mut all = Vec::new();
+    let mut processed = 0;
+
+    for chunk in files.chunks(batch_size) {
+        let _ = tauri::Emitter::emit(app, "scan-progress", ScanProgress {
+            phase: "classifying".to_string(),
+            processed,
+            total,
+        });
+
+        let batch = ai::classify_batch_public(chunk, base_folder).await?;
+        processed += chunk.len();
+        all.extend(batch);
+    }
+
+    let _ = tauri::Emitter::emit(app, "scan-progress", ScanProgress {
+        phase: "done".to_string(),
+        processed: total,
+        total,
+    });
+
+    Ok(all)
 }
 
 fn collect_files(path: &str) -> Result<Vec<FileInfo>, String> {
@@ -31,7 +78,6 @@ fn collect_files(path: &str) -> Result<Vec<FileInfo>, String> {
         .max_depth(5)
         .into_iter()
         .filter_entry(|e| {
-            // Skip hidden dirs and common system folders
             let name = e.file_name().to_string_lossy();
             !name.starts_with('.') && name != "node_modules" && name != "__pycache__" && name != "Thumbs.db"
         });
@@ -44,7 +90,6 @@ fn collect_files(path: &str) -> Result<Vec<FileInfo>, String> {
         let file_path = entry.path();
         let metadata = fs::metadata(file_path).map_err(|e| e.to_string())?;
 
-        // Skip zero-byte files
         if metadata.len() == 0 {
             continue;
         }
