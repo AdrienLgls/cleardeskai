@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Bot, Key, Eye } from "lucide-react";
 import { useAppStore } from "../../stores/appStore";
+import { WatchPanel } from "../watch/WatchPanel";
 
 export function SettingsView() {
   const { ollamaStatus } = useAppStore();
@@ -64,6 +65,11 @@ export function SettingsView() {
           </div>
         </div>
       </section>
+
+      {/* Watch Mode */}
+      <div className="mb-6">
+        <WatchPanel />
+      </div>
 
       {/* BYOK */}
       <section
