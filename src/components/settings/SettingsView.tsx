@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bot, Key, Eye, EyeOff, Save, Shield, Loader2, Trash2 } from "lucide-react";
+import { Bot, Key, Eye, EyeOff, Save, Shield, Loader2, Trash2, ChevronDown } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../../stores/appStore";
 import { useToast } from "../toast/ToastProvider";
@@ -21,6 +21,9 @@ export function SettingsView() {
   const [licenseKey, setLicenseKey] = useState("");
   const [license, setLicense] = useState<LicenseInfo | null>(null);
   const [activating, setActivating] = useState(false);
+  const [models, setModels] = useState<string[]>([]);
+  const [selectedModel, setSelectedModel] = useState("");
+  const [loadingModels, setLoadingModels] = useState(false);
 
   useEffect(() => {
     // Load API key
@@ -31,11 +34,41 @@ export function SettingsView() {
     // Load license info
     invoke<LicenseInfo>("get_license_info").then(setLicense).catch(() => {});
 
-    // Check Ollama status
+    // Load saved model preference
+    invoke<string | null>("load_setting", { key: "ai_model" }).then((val) => {
+      if (val) setSelectedModel(val);
+      else setSelectedModel("qwen3:4b");
+    }).catch(() => setSelectedModel("qwen3:4b"));
+
+    // Check Ollama status and load models
     invoke<{ status: string }>("check_ollama_status").then((s) => {
       setOllamaStatus(s.status as "running" | "not_installed" | "no_model");
+      if (s.status === "running" || s.status === "no_model") {
+        loadModels();
+      }
     }).catch(() => {});
   }, [setOllamaStatus]);
+
+  async function loadModels() {
+    setLoadingModels(true);
+    try {
+      const list = await invoke<string[]>("list_ollama_models");
+      setModels(list);
+    } catch {
+      setModels([]);
+    }
+    setLoadingModels(false);
+  }
+
+  async function handleModelChange(model: string) {
+    setSelectedModel(model);
+    try {
+      await invoke("save_setting", { key: "ai_model", value: model });
+      toast("success", `Model set to ${model}`);
+    } catch (err) {
+      toast("error", `Failed to save model: ${err}`);
+    }
+  }
 
   async function handleSaveKey() {
     try {
@@ -206,9 +239,35 @@ export function SettingsView() {
             <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Model
             </span>
-            <span className="text-sm font-mono" style={{ color: "var(--text-primary)" }}>
-              qwen3:4b
-            </span>
+            {loadingModels ? (
+              <Loader2 size={14} className="animate-spin" style={{ color: "var(--text-secondary)" }} />
+            ) : models.length > 0 ? (
+              <div className="relative">
+                <select
+                  value={selectedModel}
+                  onChange={(e) => handleModelChange(e.target.value)}
+                  className="appearance-none text-sm font-mono pr-6 pl-2 py-1 rounded-lg border outline-none cursor-pointer"
+                  style={{
+                    background: "var(--bg-tertiary)",
+                    borderColor: "var(--border)",
+                    color: "var(--text-primary)",
+                  }}
+                >
+                  {models.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={12}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                  style={{ color: "var(--text-secondary)" }}
+                />
+              </div>
+            ) : (
+              <span className="text-sm font-mono" style={{ color: "var(--text-primary)" }}>
+                {selectedModel || "qwen3:4b"}
+              </span>
+            )}
           </div>
         </div>
       </section>

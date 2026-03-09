@@ -1,4 +1,5 @@
 use crate::models::{FileInfo, Classification};
+use crate::db;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
@@ -6,6 +7,44 @@ use std::time::Duration;
 const OLLAMA_URL: &str = "http://localhost:11434";
 const DEFAULT_MODEL: &str = "qwen3:4b";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(120);
+
+/// Get the user-configured model or fall back to default
+pub fn get_model() -> String {
+    db::get_setting("ai_model")
+        .ok()
+        .flatten()
+        .unwrap_or_else(|| DEFAULT_MODEL.to_string())
+}
+
+/// List all models installed in Ollama
+pub async fn list_models() -> Result<Vec<String>, String> {
+    let client = Client::builder()
+        .timeout(Duration::from_secs(5))
+        .build()
+        .map_err(|e| format!("Failed to create client: {}", e))?;
+
+    let resp = client
+        .get(format!("{}/api/tags", OLLAMA_URL))
+        .send()
+        .await
+        .map_err(|e| format!("Failed to connect to Ollama: {}", e))?;
+
+    let body: serde_json::Value = resp
+        .json()
+        .await
+        .map_err(|e| format!("Failed to parse response: {}", e))?;
+
+    let models = body["models"]
+        .as_array()
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|m| m["name"].as_str().map(|s| s.to_string()))
+                .collect()
+        })
+        .unwrap_or_default();
+
+    Ok(models)
+}
 
 #[derive(Serialize)]
 struct OllamaRequest {
@@ -57,15 +96,17 @@ pub async fn check_status() -> (String, Option<String>, Option<String>) {
         Err(_) => return ("not_installed".to_string(), None, None),
     };
 
+    let current_model = get_model();
+    let model_prefix = current_model.split(':').next().unwrap_or(&current_model);
     let has_model = models["models"]
         .as_array()
         .map(|arr| arr.iter().any(|m| {
-            m["name"].as_str().unwrap_or("").starts_with("qwen3")
+            m["name"].as_str().unwrap_or("").starts_with(model_prefix)
         }))
         .unwrap_or(false);
 
     if has_model {
-        ("running".to_string(), Some(DEFAULT_MODEL.to_string()), version)
+        ("running".to_string(), Some(current_model), version)
     } else {
         ("no_model".to_string(), None, version)
     }
@@ -120,7 +161,7 @@ Respond ONLY with valid JSON, no markdown."#,
     );
 
     let request = OllamaRequest {
-        model: DEFAULT_MODEL.to_string(),
+        model: get_model(),
         prompt,
         stream: false,
         format: "json".to_string(),
@@ -177,7 +218,7 @@ pub async fn pull_model() -> Result<(), String> {
 
     client
         .post(format!("{}/api/pull", OLLAMA_URL))
-        .json(&serde_json::json!({ "name": DEFAULT_MODEL, "stream": false }))
+        .json(&serde_json::json!({ "name": get_model(), "stream": false }))
         .send()
         .await
         .map_err(|e| format!("Failed to pull model: {}", e))?;
