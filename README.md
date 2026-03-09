@@ -150,6 +150,8 @@ cleardeskai/
 - [x] History search & status filter
 - [x] Category color coding in scan results
 - [x] Window state persistence (size/position remembered)
+- [x] Keyboard navigation in scan results (arrows/j/k, space, enter)
+- [x] CI/CD pipeline (GitHub Actions — build + release)
 - [ ] Near-duplicate detection
 - [ ] Semantic search
 - [ ] Custom organization rules/templates
