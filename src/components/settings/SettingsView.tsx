@@ -186,7 +186,7 @@ export function SettingsView() {
             </p>
             <button
               onClick={handleDeactivateLicense}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium btn-press"
               style={{ background: "var(--bg-tertiary)", color: "var(--danger)" }}
             >
               <Trash2 size={12} />
@@ -265,7 +265,7 @@ export function SettingsView() {
                 <select
                   value={selectedModel}
                   onChange={(e) => handleModelChange(e.target.value)}
-                  className="appearance-none text-sm font-mono pr-6 pl-2 py-1 rounded-lg border outline-none cursor-pointer"
+                  className="appearance-none text-sm font-mono pr-6 pl-2 py-1 rounded-lg border outline-none cursor-pointer input-focus"
                   style={{
                     background: "var(--bg-tertiary)",
                     borderColor: "var(--border)",
@@ -315,7 +315,7 @@ export function SettingsView() {
                 await invoke("save_setting", { key: "scan_depth", value: e.target.value }).catch(() => {});
                 toast("success", `Scan depth set to ${e.target.value}`);
               }}
-              className="px-3 py-2 rounded-lg text-sm border outline-none"
+              className="px-3 py-2 rounded-lg text-sm border outline-none input-focus cursor-pointer"
               style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
             >
               <option value="1">1 level</option>
@@ -338,7 +338,7 @@ export function SettingsView() {
                 await invoke("save_setting", { key: "scan_min_size", value: e.target.value }).catch(() => {});
                 toast("success", "Min file size updated");
               }}
-              className="px-3 py-2 rounded-lg text-sm border outline-none"
+              className="px-3 py-2 rounded-lg text-sm border outline-none input-focus cursor-pointer"
               style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
             >
               <option value="1">No minimum (skip empty only)</option>
@@ -360,7 +360,7 @@ export function SettingsView() {
                 await invoke("save_setting", { key: "confidence_threshold", value: e.target.value }).catch(() => {});
                 toast("success", "Confidence threshold updated");
               }}
-              className="px-3 py-2 rounded-lg text-sm border outline-none"
+              className="px-3 py-2 rounded-lg text-sm border outline-none input-focus cursor-pointer"
               style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
             >
               <option value="0">Disabled (approve all)</option>
@@ -394,7 +394,7 @@ export function SettingsView() {
                   toast("success", "Exclude patterns saved");
                 }}
                 disabled={scanExcludes === savedScanExcludes}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-opacity"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-opacity btn-press"
                 style={{ background: "var(--accent)", color: "white", opacity: scanExcludes !== savedScanExcludes ? 1 : 0.5 }}
               >
                 <Save size={14} />
@@ -451,7 +451,7 @@ export function SettingsView() {
           </div>
           <button
             onClick={handleSaveKey}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-opacity"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-opacity btn-press"
             style={{ background: "var(--accent)", color: "white", opacity: keyChanged ? 1 : 0.5 }}
             disabled={!keyChanged}
           >
@@ -489,7 +489,7 @@ export function SettingsView() {
                 localStorage.removeItem("cleardeskai_onboarded");
                 toast("info", "Onboarding will show on next launch");
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium btn-press"
               style={{ background: "var(--bg-tertiary)", color: "var(--text-primary)" }}
             >
               <RotateCcw size={12} />
@@ -507,7 +507,7 @@ export function SettingsView() {
               onClick={() => {
                 import("@tauri-apps/plugin-shell").then(({ open }) => open("https://github.com/AdrienLgls/cleardeskai"));
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium btn-press"
               style={{ background: "var(--bg-tertiary)", color: "var(--accent)" }}
             >
               GitHub

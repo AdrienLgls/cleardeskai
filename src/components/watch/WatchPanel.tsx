@@ -93,7 +93,7 @@ export function WatchPanel() {
             </span>
           )}
         </div>
-        <button onClick={toggleWatch} disabled={loading || (!running && folders.length === 0)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium" style={{ background: running ? "var(--danger)" : "var(--success)", color: "white", opacity: loading || (!running && folders.length === 0) ? 0.5 : 1 }}>
+        <button onClick={toggleWatch} disabled={loading || (!running && folders.length === 0)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium btn-press" style={{ background: running ? "var(--danger)" : "var(--success)", color: "white", opacity: loading || (!running && folders.length === 0) ? 0.5 : 1 }}>
           {loading ? <Loader2 size={12} className="animate-spin" /> : running ? <EyeOff size={12} /> : <Eye size={12} />}
           {running ? "Stop" : "Start"}
         </button>
@@ -103,34 +103,31 @@ export function WatchPanel() {
       </p>
       <div className="space-y-2 mb-4">
         {folders.map((folder, i) => (
-          <div key={i} className="flex items-center justify-between rounded-lg px-3 py-2" style={{ background: "var(--bg-tertiary)" }}>
+          <div key={i} className="flex items-center justify-between rounded-lg px-3 py-2 transition-colors" style={{ background: "var(--bg-tertiary)" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--border)"} onMouseLeave={(e) => e.currentTarget.style.background = "var(--bg-tertiary)"}>
             <span className="text-sm font-mono truncate" style={{ color: "var(--text-primary)" }}>{folder}</span>
             <button onClick={() => removeFolder(i)} style={{ color: "var(--text-secondary)" }}><Trash2 size={14} /></button>
           </div>
         ))}
       </div>
       <div className="flex items-center gap-2 mb-4">
-        <button onClick={addFolder} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium" style={{ background: "var(--bg-tertiary)", color: "var(--text-primary)" }}>
+        <button onClick={addFolder} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium btn-press" style={{ background: "var(--bg-tertiary)", color: "var(--text-primary)" }}>
           <FolderPlus size={14} /> Add Folder
         </button>
-        <select value={interval} onChange={(e) => setIntervalVal(Number(e.target.value))} className="px-3 py-2 rounded-lg text-sm border outline-none" style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}>
+        <select value={interval} onChange={(e) => setIntervalVal(Number(e.target.value))} className="px-3 py-2 rounded-lg text-sm border outline-none input-focus cursor-pointer" style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}>
           <option value={30}>Every 30s</option>
           <option value={60}>Every 60s</option>
           <option value={300}>Every 5m</option>
           <option value={600}>Every 10m</option>
         </select>
       </div>
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={autoResume}
-          onChange={async (e) => {
-            const val = e.target.checked;
+      <label className="flex items-center gap-3 cursor-pointer">
+        <div
+          className={`toggle-switch ${autoResume ? "active" : ""}`}
+          onClick={async () => {
+            const val = !autoResume;
             setAutoResume(val);
             await invoke("save_setting", { key: "watch_auto_resume", value: val ? "true" : "false" }).catch(() => {});
           }}
-          className="w-4 h-4 rounded accent-current"
-          style={{ accentColor: "var(--accent)" }}
         />
         <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
           Auto-resume on app startup
