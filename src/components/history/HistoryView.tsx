@@ -1,4 +1,4 @@
-import { RotateCcw, Clock, FileText, Loader2, ChevronDown, ArrowRight, Trash2 } from "lucide-react";
+import { RotateCcw, Clock, FileText, Loader2, ChevronDown, ArrowRight, Trash2, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../../stores/appStore";
@@ -10,6 +10,7 @@ export function HistoryView() {
   const [undoing, setUndoing] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   async function handleUndo(operationId: string) {
     setUndoing(operationId);
@@ -24,7 +25,7 @@ export function HistoryView() {
   }
 
   async function handleClearHistory() {
-    if (!confirm("Clear all history? This cannot be undone.")) return;
+    setShowClearConfirm(false);
     setClearing(true);
     try {
       await invoke("clear_history");
@@ -36,6 +37,14 @@ export function HistoryView() {
     setClearing(false);
   }
 
+  function openFolder(path: string) {
+    // Extract directory from file path
+    const dir = path.substring(0, path.lastIndexOf("/")) || path.substring(0, path.lastIndexOf("\\"));
+    if (dir) {
+      import("@tauri-apps/plugin-shell").then(({ open }) => open(dir));
+    }
+  }
+
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -44,7 +53,7 @@ export function HistoryView() {
         </h1>
         {history.length > 0 && (
           <button
-            onClick={handleClearHistory}
+            onClick={() => setShowClearConfirm(true)}
             disabled={clearing}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
             style={{ background: "var(--bg-tertiary)", color: "var(--danger)" }}
@@ -129,9 +138,16 @@ export function HistoryView() {
                       const destName = c.destination.split(/[/\\]/).pop() || c.destination;
                       return (
                         <div key={i} className="flex items-center gap-2 text-xs font-mono" style={{ color: "var(--text-secondary)" }}>
-                          <span className="truncate" style={{ maxWidth: "40%" }}>{srcName}</span>
+                          <span className="truncate" style={{ maxWidth: "35%" }}>{srcName}</span>
                           <ArrowRight size={10} style={{ flexShrink: 0 }} />
-                          <span className="truncate" style={{ color: "var(--text-primary)", maxWidth: "55%" }}>{destName}</span>
+                          <span className="truncate flex-1" style={{ color: "var(--text-primary)" }}>{destName}</span>
+                          <button
+                            onClick={() => openFolder(c.destination)}
+                            className="flex-shrink-0 p-1 rounded hover:bg-[var(--bg-tertiary)] transition-colors"
+                            title="Open in file manager"
+                          >
+                            <ExternalLink size={10} style={{ color: "var(--accent)" }} />
+                          </button>
                         </div>
                       );
                     })}
@@ -140,6 +156,43 @@ export function HistoryView() {
               )}
             </div>
           ))}
+        </div>
+      )}
+      {showClearConfirm && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ background: "rgba(0,0,0,0.5)" }}
+          onClick={() => setShowClearConfirm(false)}
+        >
+          <div
+            className="rounded-xl p-6 border max-w-sm w-full mx-4 animate-fade-in"
+            style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+              Clear History
+            </h3>
+            <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
+              This will permanently delete all {history.length} operation records. Your files won't be moved back.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="px-4 py-2 rounded-lg text-sm font-medium"
+                style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleClearHistory}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
+                style={{ background: "var(--danger)", color: "white" }}
+              >
+                <Trash2 size={14} />
+                Clear All
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
