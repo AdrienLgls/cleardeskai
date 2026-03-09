@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bot, Key, Eye, EyeOff, Save, Shield, Loader2, Trash2, ChevronDown, ScanSearch } from "lucide-react";
+import { Bot, Key, Eye, EyeOff, Save, Shield, Loader2, Trash2, ChevronDown, ScanSearch, RotateCcw, Info } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../../stores/appStore";
 import { useToast } from "../toast/ToastProvider";
@@ -405,6 +405,61 @@ export function SettingsView() {
             <Save size={14} />
             Save
           </button>
+        </div>
+      </section>
+
+      {/* About & Data */}
+      <section
+        className="rounded-xl p-6 border mb-6"
+        style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <Info size={18} style={{ color: "var(--accent)" }} />
+          <h2 className="font-semibold" style={{ color: "var(--text-primary)" }}>
+            About & Data
+          </h2>
+        </div>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm" style={{ color: "var(--text-secondary)" }}>Version</span>
+            <span className="text-sm font-mono" style={{ color: "var(--text-primary)" }}>1.0.0</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm" style={{ color: "var(--text-secondary)" }}>Re-run Onboarding</span>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)", opacity: 0.7 }}>
+                Show the welcome wizard again on next launch
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                localStorage.removeItem("cleardeskai_onboarded");
+                toast("info", "Onboarding will show on next launch");
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+              style={{ background: "var(--bg-tertiary)", color: "var(--text-primary)" }}
+            >
+              <RotateCcw size={12} />
+              Reset
+            </button>
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm" style={{ color: "var(--text-secondary)" }}>Open Source</span>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)", opacity: 0.7 }}>
+                View source code on GitHub
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                import("@tauri-apps/plugin-shell").then(({ open }) => open("https://github.com/AdrienLgls/cleardeskai"));
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+              style={{ background: "var(--bg-tertiary)", color: "var(--accent)" }}
+            >
+              GitHub
+            </button>
+          </div>
         </div>
       </section>
     </div>
