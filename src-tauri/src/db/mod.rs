@@ -42,6 +42,12 @@ pub fn init(path: &Path) -> Result<()> {
             interval_secs INTEGER NOT NULL DEFAULT 60,
             auto_mode INTEGER NOT NULL DEFAULT 0,
             last_scan TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS recent_folders (
+            path TEXT PRIMARY KEY,
+            last_used TEXT NOT NULL,
+            scan_count INTEGER NOT NULL DEFAULT 1
         );"
     )?;
     Ok(())
@@ -154,6 +160,33 @@ pub fn get_all_operations() -> Result<Vec<(String, String, String, bool)>> {
         ))
     })?.collect::<Result<Vec<_>>>()?;
     Ok(ops)
+}
+
+// Recent folders
+pub fn add_recent_folder(path: &str) -> Result<()> {
+    let conn = get_connection()?;
+    let now = chrono::Utc::now().to_rfc3339();
+    conn.execute(
+        "INSERT INTO recent_folders (path, last_used, scan_count) VALUES (?1, ?2, 1)
+         ON CONFLICT(path) DO UPDATE SET last_used = ?2, scan_count = scan_count + 1",
+        params![path, now],
+    )?;
+    Ok(())
+}
+
+pub fn get_recent_folders(limit: usize) -> Result<Vec<(String, String, i64)>> {
+    let conn = get_connection()?;
+    let mut stmt = conn.prepare(
+        "SELECT path, last_used, scan_count FROM recent_folders ORDER BY last_used DESC LIMIT ?1"
+    )?;
+    let rows = stmt.query_map(params![limit as i64], |row| {
+        Ok((
+            row.get::<_, String>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, i64>(2)?,
+        ))
+    })?.collect::<Result<Vec<_>>>()?;
+    Ok(rows)
 }
 
 pub fn clear_history() -> Result<()> {

@@ -16,6 +16,9 @@ struct ScanProgress {
 
 #[tauri::command]
 pub async fn scan_folder(app: AppHandle, path: String) -> Result<ScanResult, String> {
+    // Track this folder as recently scanned
+    let _ = db::add_recent_folder(&path);
+
     let mut files = collect_files(&path)?;
 
     // Emit file count so frontend shows "Found X files, classifying..."
@@ -69,6 +72,11 @@ async fn classify_with_progress(
     });
 
     Ok(all)
+}
+
+#[tauri::command]
+pub fn get_recent_folders() -> Result<Vec<(String, String, i64)>, String> {
+    db::get_recent_folders(10).map_err(|e| e.to_string())
 }
 
 fn collect_files(path: &str) -> Result<Vec<FileInfo>, String> {

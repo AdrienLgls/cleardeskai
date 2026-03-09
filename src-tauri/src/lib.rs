@@ -93,6 +93,7 @@ pub fn run() {
             ai_status::list_ollama_models,
             ai_status::get_current_model,
             watch::auto_resume_watch,
+            scan::get_recent_folders,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

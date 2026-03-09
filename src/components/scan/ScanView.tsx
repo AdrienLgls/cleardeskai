@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown } from "lucide-react";
+import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown, Clock } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
@@ -57,12 +57,14 @@ export function ScanView() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [currentModel, setCurrentModel] = useState("qwen3:4b");
   const [appliedSummary, setAppliedSummary] = useState<{ category: string; count: number; size: number }[]>([]);
+  const [recentFolders, setRecentFolders] = useState<[string, string, number][]>([]);
 
   useEffect(() => {
     invoke<{ status: string }>("check_ollama_status").then((s) => {
       setOllamaStatus(s.status as "running" | "not_installed" | "no_model");
     }).catch(() => {});
     invoke<string>("get_current_model").then(setCurrentModel).catch(() => {});
+    invoke<[string, string, number][]>("get_recent_folders").then(setRecentFolders).catch(() => {});
 
     // Tauri native drag-and-drop — gives real filesystem paths
     const unlistenPromise = getCurrentWebview().onDragDropEvent((event) => {
@@ -325,6 +327,35 @@ export function ScanView() {
           </button>
         )}
       </div>
+
+      {/* Recent Folders */}
+      {!scan.selectedFolder && !scan.scanning && scan.results.length === 0 && recentFolders.length > 0 && (
+        <div className="mb-6 animate-fade-in">
+          <h3 className="text-xs font-medium uppercase tracking-wider mb-2" style={{ color: "var(--text-secondary)" }}>
+            Recent Folders
+          </h3>
+          <div className="space-y-1">
+            {recentFolders.map(([path, _lastUsed, scanCount]) => {
+              const folderName = path.split(/[/\\]/).pop() || path;
+              return (
+                <button
+                  key={path}
+                  onClick={() => setScanFolder(path)}
+                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-left text-sm transition-colors"
+                  style={{ color: "var(--text-secondary)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-tertiary)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                >
+                  <Clock size={14} style={{ flexShrink: 0, opacity: 0.5 }} />
+                  <span className="font-medium truncate" style={{ color: "var(--text-primary)" }}>{folderName}</span>
+                  <span className="text-xs truncate opacity-60">{path}</span>
+                  <span className="text-xs ml-auto whitespace-nowrap opacity-50">{scanCount}x</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Scanning Progress */}
       {scan.scanning && (
