@@ -228,3 +228,29 @@ body {
 .nav-indicator {
   animation: slideIndicator 0.2s ease-out forwards;
 }
+
+/* Skeleton shimmer loading */
+@keyframes skeletonShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--bg-tertiary) 0%,
+    var(--border) 50%,
+    var(--bg-tertiary) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+
+/* Success glow ring */
+@keyframes successRing {
+  0% { box-shadow: 0 0 0 0 rgba(0, 210, 160, 0.4); }
+  70% { box-shadow: 0 0 0 12px rgba(0, 210, 160, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 210, 160, 0); }
+}
+.animate-success-ring {
+  animation: successRing 1.5s ease-out;
+}

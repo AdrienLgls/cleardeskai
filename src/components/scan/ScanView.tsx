@@ -505,33 +505,74 @@ export function ScanView() {
         </div>
       )}
 
+      {/* Skeleton Loaders during scan */}
+      {scan.scanning && (
+        <div className="space-y-3 mb-6">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className="rounded-lg p-4 border animate-fade-in"
+              style={{
+                background: "var(--bg-secondary)",
+                borderColor: "var(--border)",
+                animationDelay: `${i * 80}ms`,
+                opacity: 0,
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded skeleton-shimmer" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3.5 rounded-full skeleton-shimmer" style={{ width: `${60 + (i * 7) % 30}%` }} />
+                  <div className="h-2.5 rounded-full skeleton-shimmer" style={{ width: `${40 + (i * 13) % 40}%` }} />
+                </div>
+                <div className="w-12 h-5 rounded-full skeleton-shimmer" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Success State */}
       {applied !== null && (
         <div
-          className="rounded-xl p-10 border text-center mb-6 animate-fade-in"
+          className="rounded-xl p-10 border mb-6 animate-fade-in"
           style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
         >
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-in" style={{ background: "var(--success)", opacity: 0.15 }}>
-            <Check size={32} style={{ color: "var(--success)" }} />
+          {/* Animated checkmark */}
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center animate-bounce-in"
+                style={{ background: "linear-gradient(135deg, var(--success), #00b894)", boxShadow: "0 8px 32px rgba(0, 210, 160, 0.3)" }}
+              >
+                <Check size={36} style={{ color: "white" }} strokeWidth={3} />
+              </div>
+              <div
+                className="absolute inset-0 rounded-full animate-pulse-glow"
+                style={{ boxShadow: "0 0 0 0 rgba(0, 210, 160, 0.4)" }}
+              />
+            </div>
           </div>
-          <h2 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+          <h2 className="text-2xl font-bold mb-1 text-center" style={{ color: "var(--text-primary)" }}>
             {applied} files organized!
           </h2>
-          <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
-            All changes have been applied successfully.
+          <p className="text-sm mb-6 text-center" style={{ color: "var(--text-secondary)" }}>
+            Everything is in its place. Here's the breakdown:
           </p>
           {appliedSummary.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-3 mb-6">
+            <div className="grid grid-cols-2 gap-3 mb-6 max-w-md mx-auto stagger-in">
               {appliedSummary.map((s) => (
                 <div
                   key={s.category}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs"
-                  style={{ background: "var(--bg-tertiary)" }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl"
+                  style={{ background: "var(--bg-tertiary)", borderLeft: `3px solid ${getCategoryColor(s.category)}` }}
                 >
-                  <span className="font-medium" style={{ color: "var(--text-primary)" }}>{s.category}</span>
-                  <span style={{ color: "var(--text-secondary)" }}>
-                    {s.count} file{s.count !== 1 ? "s" : ""} · {s.size >= 1048576 ? `${(s.size / 1048576).toFixed(1)} MB` : `${(s.size / 1024).toFixed(0)} KB`}
-                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{s.category}</div>
+                    <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                      {s.count} file{s.count !== 1 ? "s" : ""} · {s.size >= 1048576 ? `${(s.size / 1048576).toFixed(1)} MB` : `${(s.size / 1024).toFixed(0)} KB`}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -791,30 +832,38 @@ export function ScanView() {
           </div>
 
           {/* Apply progress bar */}
-          {applying && applyProgress && (
+          {applying && applyProgress && (() => {
+            const pct = applyProgress.total > 0 ? (applyProgress.processed / applyProgress.total) * 100 : 0;
+            const fileName = applyProgress.currentFile?.split(/[/\\]/).pop() || "";
+            return (
             <div
-              className="rounded-xl p-4 border mb-4 animate-fade-in"
+              className="rounded-xl p-5 border mb-4 animate-fade-in"
               style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
             >
-              <div className="flex items-center gap-3 mb-2">
-                <Loader2 size={14} className="animate-spin" style={{ color: "var(--accent)" }} />
-                <span className="text-sm" style={{ color: "var(--text-primary)" }}>
-                  Moving files... {applyProgress.processed}/{applyProgress.total}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <Loader2 size={16} className="animate-spin" style={{ color: "var(--accent)" }} />
+                  <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                    Moving files...
+                  </span>
+                </div>
+                <span className="text-lg font-bold tabular-nums" style={{ color: "var(--accent)" }}>
+                  {Math.round(pct)}%
                 </span>
               </div>
-              <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-tertiary)" }}>
+              <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ background: "var(--bg-tertiary)" }}>
                 <div
-                  className="h-full rounded-full transition-all duration-200 progress-shimmer"
-                  style={{ width: `${applyProgress.total > 0 ? (applyProgress.processed / applyProgress.total) * 100 : 0}%` }}
+                  className="h-full rounded-full transition-all duration-300 ease-out progress-shimmer"
+                  style={{ width: `${pct}%` }}
                 />
               </div>
-              {applyProgress.currentFile && (
-                <p className="text-xs mt-1.5 font-mono truncate" style={{ color: "var(--text-secondary)" }}>
-                  {applyProgress.currentFile}
-                </p>
-              )}
+              <div className="flex justify-between mt-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+                <span className="font-mono truncate max-w-[70%]">{fileName}</span>
+                <span className="tabular-nums">{applyProgress.processed}/{applyProgress.total}</span>
+              </div>
             </div>
-          )}
+            );
+          })()}
 
           <div className="flex gap-3">
             {approvedCount > 0 && (
