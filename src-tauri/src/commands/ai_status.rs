@@ -16,3 +16,8 @@ pub async fn setup_ollama() -> Result<(), String> {
 pub async fn list_ollama_models() -> Result<Vec<String>, String> {
     ai::list_models().await
 }
+
+#[tauri::command]
+pub fn get_current_model() -> String {
+    ai::get_model()
+}

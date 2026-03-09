@@ -31,6 +31,8 @@ export function ScanView() {
   const [scanPhase, setScanPhase] = useState<string>("");
   const [searchFilter, setSearchFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [currentModel, setCurrentModel] = useState("qwen3:4b");
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
@@ -53,6 +55,7 @@ export function ScanView() {
     invoke<{ status: string }>("check_ollama_status").then((s) => {
       setOllamaStatus(s.status as "running" | "not_installed" | "no_model");
     }).catch(() => {});
+    invoke<string>("get_current_model").then(setCurrentModel).catch(() => {});
   }, [setOllamaStatus]);
 
   async function handlePullModel() {
@@ -117,7 +120,14 @@ export function ScanView() {
     unlisten();
   }
 
+  function handleApplyClick() {
+    const approved = scan.results.filter((r) => r.approved);
+    if (approved.length === 0) return;
+    setShowConfirm(true);
+  }
+
   async function handleApply() {
+    setShowConfirm(false);
     const approved = scan.results.filter((r) => r.approved);
     if (approved.length === 0) return;
     setApplying(true);
@@ -194,7 +204,7 @@ export function ScanView() {
                 AI Model Required
               </h3>
               <p className="text-xs mb-3" style={{ color: "var(--text-secondary)" }}>
-                Ollama is running but the AI model (qwen3:4b) needs to be downloaded. This is a one-time ~2.5GB download.
+                Ollama is running but the AI model ({currentModel}) needs to be downloaded. This is a one-time download.
               </p>
               <button
                 onClick={handlePullModel}
@@ -491,7 +501,7 @@ export function ScanView() {
           <div className="flex gap-3">
             {approvedCount > 0 && (
               <button
-                onClick={handleApply}
+                onClick={handleApplyClick}
                 disabled={applying}
                 className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold btn"
                 style={{ background: "var(--accent)", color: "white" }}
@@ -514,6 +524,44 @@ export function ScanView() {
             </button>
           </div>
         </>
+      )}
+      {/* Confirmation Dialog */}
+      {showConfirm && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ background: "rgba(0,0,0,0.5)" }}
+          onClick={() => setShowConfirm(false)}
+        >
+          <div
+            className="rounded-xl p-6 border max-w-md w-full mx-4 animate-fade-in"
+            style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+              Confirm File Organization
+            </h3>
+            <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
+              This will move <strong>{approvedCount} file{approvedCount !== 1 ? "s" : ""}</strong> to their proposed destinations. You can undo this from the History page.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-4 py-2 rounded-lg text-sm font-medium"
+                style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApply}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
+                style={{ background: "var(--accent)", color: "white" }}
+              >
+                <ChevronRight size={14} />
+                Move Files
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
