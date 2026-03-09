@@ -154,7 +154,7 @@ export function SettingsView() {
   const keyChanged = apiKey !== savedKey;
 
   return (
-    <div className="p-8 max-w-3xl mx-auto">
+    <div className="p-8 max-w-full">
       <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--text-primary)" }}>
         Settings
       </h1>
@@ -186,7 +186,7 @@ export function SettingsView() {
             </p>
             <button
               onClick={handleDeactivateLicense}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium btn-press"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium btn-press"
               style={{ background: "var(--bg-tertiary)", color: "var(--danger)" }}
             >
               <Trash2 size={12} />
@@ -204,7 +204,7 @@ export function SettingsView() {
                 value={licenseKey}
                 onChange={(e) => setLicenseKey(e.target.value.toUpperCase())}
                 placeholder="CDAI-PRO-XXXX-XXXX-XXXX"
-                className="flex-1 px-3 py-2 rounded-lg text-sm border outline-none font-mono input-focus"
+                className="flex-1 px-4 py-2.5 rounded-lg text-sm border outline-none font-mono input-focus"
                 style={{
                   background: "var(--bg-tertiary)",
                   borderColor: "var(--border)",
@@ -315,7 +315,7 @@ export function SettingsView() {
                 await invoke("save_setting", { key: "scan_depth", value: e.target.value }).catch(() => {});
                 toast("success", `Scan depth set to ${e.target.value}`);
               }}
-              className="px-3 py-2 rounded-lg text-sm border outline-none input-focus cursor-pointer"
+              className="px-4 py-2.5 rounded-lg text-sm border outline-none input-focus cursor-pointer"
               style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
             >
               <option value="1">1 level</option>
@@ -338,7 +338,7 @@ export function SettingsView() {
                 await invoke("save_setting", { key: "scan_min_size", value: e.target.value }).catch(() => {});
                 toast("success", "Min file size updated");
               }}
-              className="px-3 py-2 rounded-lg text-sm border outline-none input-focus cursor-pointer"
+              className="px-4 py-2.5 rounded-lg text-sm border outline-none input-focus cursor-pointer"
               style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
             >
               <option value="1">No minimum (skip empty only)</option>
@@ -360,7 +360,7 @@ export function SettingsView() {
                 await invoke("save_setting", { key: "confidence_threshold", value: e.target.value }).catch(() => {});
                 toast("success", "Confidence threshold updated");
               }}
-              className="px-3 py-2 rounded-lg text-sm border outline-none input-focus cursor-pointer"
+              className="px-4 py-2.5 rounded-lg text-sm border outline-none input-focus cursor-pointer"
               style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
             >
               <option value="0">Disabled (approve all)</option>
@@ -384,7 +384,7 @@ export function SettingsView() {
                 value={scanExcludes}
                 onChange={(e) => setScanExcludes(e.target.value)}
                 placeholder="e.g. backups, old_files, temp"
-                className="flex-1 px-3 py-2 rounded-lg text-sm border outline-none input-focus"
+                className="flex-1 px-4 py-2.5 rounded-lg text-sm border outline-none input-focus"
                 style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
               />
               <button
@@ -434,7 +434,7 @@ export function SettingsView() {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="sk-... or sk-ant-..."
-              className="w-full px-3 py-2 rounded-lg text-sm border outline-none input-focus"
+              className="w-full px-4 py-2.5 rounded-lg text-sm border outline-none input-focus"
               style={{
                 background: "var(--bg-tertiary)",
                 borderColor: "var(--border)",
@@ -489,7 +489,7 @@ export function SettingsView() {
                 localStorage.removeItem("cleardeskai_onboarded");
                 toast("info", "Onboarding will show on next launch");
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium btn-press"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium btn-press"
               style={{ background: "var(--bg-tertiary)", color: "var(--text-primary)" }}
             >
               <RotateCcw size={12} />
@@ -507,7 +507,7 @@ export function SettingsView() {
               onClick={() => {
                 import("@tauri-apps/plugin-shell").then(({ open }) => open("https://github.com/AdrienLgls/cleardeskai"));
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium btn-press"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium btn-press"
               style={{ background: "var(--bg-tertiary)", color: "var(--accent)" }}
             >
               GitHub

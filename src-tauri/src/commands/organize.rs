@@ -33,7 +33,9 @@ pub async fn apply_changes(app: AppHandle, changes: Vec<FileChange>) -> Result<A
     let total = changes.len();
     for (i, change) in changes.iter().enumerate() {
         let source_path = Path::new(&change.source);
-        let mut dest_path = std::path::PathBuf::from(&change.destination);
+        // Normalize path separators for Windows compatibility
+        let normalized_dest = change.destination.replace('/', "\\");
+        let mut dest_path = std::path::PathBuf::from(&normalized_dest);
         let file_name = source_path.file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_default();

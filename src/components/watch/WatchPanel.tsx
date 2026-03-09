@@ -93,7 +93,7 @@ export function WatchPanel() {
             </span>
           )}
         </div>
-        <button onClick={toggleWatch} disabled={loading || (!running && folders.length === 0)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium btn-press" style={{ background: running ? "var(--danger)" : "var(--success)", color: "white", opacity: loading || (!running && folders.length === 0) ? 0.5 : 1 }}>
+        <button onClick={toggleWatch} disabled={loading || (!running && folders.length === 0)} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium btn-press" style={{ background: running ? "var(--danger)" : "var(--success)", color: "white", opacity: loading || (!running && folders.length === 0) ? 0.5 : 1 }}>
           {loading ? <Loader2 size={12} className="animate-spin" /> : running ? <EyeOff size={12} /> : <Eye size={12} />}
           {running ? "Stop" : "Start"}
         </button>

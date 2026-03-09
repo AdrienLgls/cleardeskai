@@ -29,7 +29,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
   }, [setOllamaStatus]);
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-8 max-w-full">
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
           Welcome to ClearDeskAI
@@ -61,8 +61,8 @@ export function Dashboard({ onNavigate }: DashboardProps) {
       {/* Status Bar */}
       <div className="flex gap-4 mb-8">
         <div
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border flex-1 cursor-pointer hover-lift"
-          style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+          className="flex items-center gap-3 rounded-xl border flex-1 cursor-pointer hover-lift"
+          style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", padding: "1rem 1.25rem" }}
           onClick={() => onNavigate("settings")}
         >
           <Bot size={16} style={{ color: ollamaStatus === "running" ? "var(--success)" : ollamaStatus === "no_model" ? "var(--warning)" : "var(--danger)" }} />
@@ -72,8 +72,8 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           </span>
         </div>
         <div
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border flex-1 cursor-pointer hover-lift"
-          style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+          className="flex items-center gap-3 rounded-xl border flex-1 cursor-pointer hover-lift"
+          style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", padding: "1rem 1.25rem" }}
           onClick={() => onNavigate("settings")}
         >
           <Eye size={16} style={{ color: watchRunning ? "var(--success)" : "var(--text-secondary)" }} />
@@ -122,8 +122,8 @@ export function Dashboard({ onNavigate }: DashboardProps) {
                 <button
                   key={path}
                   onClick={() => onNavigate("scan")}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm border transition-all hover-lift"
-                  style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+                  className="flex items-center gap-2 rounded-lg text-sm border transition-all hover-lift"
+                  style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", padding: "0.625rem 1rem" }}
                 >
                   <Zap size={12} style={{ color: "var(--accent)" }} />
                   <span className="font-medium" style={{ color: "var(--text-primary)" }}>{name}</span>
@@ -178,11 +178,12 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           {recentOps.map((op) => (
             <div
               key={op.id}
-              className="flex items-center justify-between rounded-xl px-5 py-3 border hover-lift cursor-pointer"
+              className="flex items-center justify-between rounded-xl border hover-lift cursor-pointer"
               style={{
                 background: "var(--bg-secondary)",
                 borderColor: "var(--border)",
                 opacity: op.undone ? 0.5 : 1,
+                padding: "1rem 1.25rem",
               }}
               onClick={() => onNavigate("history")}
             >
@@ -243,10 +244,10 @@ function AnimatedNumber({ value }: { value: string }) {
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div
-      className="rounded-xl p-5 border hover-lift"
-      style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+      className="rounded-xl border hover-lift"
+      style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", padding: "1.5rem" }}
     >
-      <div className="flex items-center gap-2 mb-3" style={{ color: "var(--accent)" }}>
+      <div className="flex items-center gap-2" style={{ color: "var(--accent)", marginBottom: "0.75rem" }}>
         {icon}
         <span className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>
           {label}
@@ -263,8 +264,8 @@ function ActionCard({ icon, title, description, onClick }: { icon: React.ReactNo
   return (
     <button
       onClick={onClick}
-      className="flex items-start gap-4 rounded-xl p-5 border text-left hover-glow hover-lift"
-      style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+      className="flex items-start gap-4 rounded-xl border text-left hover-glow hover-lift"
+      style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", padding: "1.5rem" }}
     >
       <div className="rounded-lg p-2.5" style={{ background: "var(--bg-tertiary)", color: "var(--accent)" }}>
         {icon}

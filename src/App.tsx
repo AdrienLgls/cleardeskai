@@ -116,7 +116,7 @@ function App() {
     <ToastProvider>
       <div className="flex h-screen w-screen">
         <Sidebar currentView={currentView} onNavigate={setCurrentView} />
-        <main className="flex-1 overflow-auto" style={{ background: "var(--bg-primary)" }}>
+        <main className="flex-1 overflow-auto overflow-x-hidden min-w-0" style={{ background: "var(--bg-primary)" }}>
           <ErrorBoundary>
             <div key={currentView} className={slideDir === "right" ? "animate-slide-in-right" : "animate-slide-in-left"}>
               {currentView === "dashboard" && <Dashboard onNavigate={setCurrentView} />}

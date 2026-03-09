@@ -34,7 +34,7 @@ export function Sidebar({ currentView, onNavigate }: SidebarProps) {
       className="flex flex-col w-60 h-full border-r"
       style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
     >
-      <div className="flex items-center gap-2 px-5 py-5">
+      <div className="flex items-center gap-2 px-6 py-6">
         <Sparkles size={24} style={{ color: "var(--accent)" }} />
         <span className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
           ClearDeskAI
@@ -48,10 +48,11 @@ export function Sidebar({ currentView, onNavigate }: SidebarProps) {
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className="relative flex items-center gap-3 w-full px-3 py-2.5 rounded-lg mb-1 text-sm font-medium transition-all duration-200 hover:translate-x-0.5"
+              className="relative flex items-center gap-3 w-full rounded-lg mb-1 text-sm font-medium transition-all duration-200 hover:translate-x-0.5"
               style={{
                 background: active ? "var(--bg-tertiary)" : "transparent",
                 color: active ? "var(--text-primary)" : "var(--text-secondary)",
+                padding: "0.75rem 1.25rem",
               }}
             >
               {active && (
@@ -70,15 +71,15 @@ export function Sidebar({ currentView, onNavigate }: SidebarProps) {
       <div className="px-3 pb-2">
         <button
           onClick={toggleTheme}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-          style={{ color: "var(--text-secondary)" }}
+          className="flex items-center gap-3 w-full rounded-lg text-sm font-medium transition-colors"
+          style={{ color: "var(--text-secondary)", padding: "0.75rem 1.25rem" }}
         >
           {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
           {theme === "dark" ? "Light Mode" : "Dark Mode"}
         </button>
       </div>
 
-      <div className="px-5 py-4 text-xs" style={{ color: "var(--text-secondary)" }}>
+      <div className="px-6 py-5 text-xs" style={{ color: "var(--text-secondary)" }}>
         <span>ClearDeskAI v1.0.0</span>
         <span className="ml-2 opacity-60">Ctrl+/ for shortcuts</span>
       </div>

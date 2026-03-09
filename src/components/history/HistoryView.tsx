@@ -64,7 +64,7 @@ export function HistoryView() {
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-8 max-w-full">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
           History
@@ -73,7 +73,7 @@ export function HistoryView() {
           <button
             onClick={() => setShowClearConfirm(true)}
             disabled={clearing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium btn-press"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium btn-press"
             style={{ background: "var(--bg-tertiary)", color: "var(--danger)" }}
           >
             {clearing ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
@@ -85,7 +85,7 @@ export function HistoryView() {
       {history.length > 0 && (
         <div className="flex gap-3 mb-6">
           <div
-            className="flex items-center gap-2 flex-1 px-3 py-2 rounded-xl border"
+            className="flex items-center gap-2 flex-1 px-4 py-2.5 rounded-xl border"
             style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
           >
             <Search size={14} style={{ color: "var(--text-secondary)" }} />
@@ -108,7 +108,7 @@ export function HistoryView() {
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                className="px-3 py-2 text-xs font-medium capitalize transition-colors"
+                className="px-4 py-2.5 text-xs font-medium capitalize transition-colors"
                 style={{
                   background: statusFilter === s ? "var(--accent)" : "var(--bg-secondary)",
                   color: statusFilter === s ? "white" : "var(--text-secondary)",
@@ -181,7 +181,7 @@ export function HistoryView() {
                       <button
                         onClick={() => handleUndo(op.id)}
                         disabled={undoing === op.id}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors btn-press"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-colors btn-press"
                         style={{ background: "var(--bg-tertiary)", color: "var(--warning)" }}
                       >
                         {undoing === op.id ? (
