@@ -55,6 +55,19 @@ pub fn run() {
                 })
                 .build(app)?;
 
+            // Minimize to tray on window close (keep watch mode running)
+            if let Some(window) = app.get_webview_window("main") {
+                window.on_window_event(move |event| {
+                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                        api.prevent_close();
+                        // Hide window instead of closing — user can restore from tray
+                        if let Some(win) = app_handle.get_webview_window("main") {
+                            let _ = win.hide();
+                        }
+                    }
+                });
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
