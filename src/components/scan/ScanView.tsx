@@ -343,7 +343,7 @@ export function ScanView() {
                 onClick={() => {
                   import("@tauri-apps/plugin-shell").then(({ open }) => open("https://ollama.com/download"));
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium btn-press"
                 style={{ background: "var(--accent)", color: "white" }}
               >
                 <Download size={12} />
@@ -371,7 +371,7 @@ export function ScanView() {
               <button
                 onClick={handlePullModel}
                 disabled={pullingModel}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium btn-press"
                 style={{ background: "var(--accent)", color: "white", opacity: pullingModel ? 0.7 : 1 }}
               >
                 {pullingModel ? (
@@ -600,7 +600,7 @@ export function ScanView() {
           <div className="flex items-center justify-center gap-3">
             <button
               onClick={() => { resetScan(); setApplied(null); setAppliedSummary([]); setLastOperationId(null); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm btn-press"
               style={{ background: "var(--accent)", color: "white" }}
             >
               <FolderOpen size={16} />
@@ -621,7 +621,7 @@ export function ScanView() {
                   setUndoing(false);
                 }}
                 disabled={undoing}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm btn-press"
                 style={{ background: "var(--bg-tertiary)", color: "var(--warning)" }}
               >
                 {undoing ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
@@ -706,7 +706,7 @@ export function ScanView() {
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
                 placeholder="Filter files..."
-                className="w-full pl-8 pr-3 py-2 rounded-lg text-sm border outline-none"
+                className="w-full pl-8 pr-3 py-2 rounded-lg text-sm border outline-none input-focus"
                 style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
               />
             </div>
@@ -715,7 +715,7 @@ export function ScanView() {
               <select
                 value={sortKey}
                 onChange={(e) => setSortKey(e.target.value as SortKey)}
-                className="text-xs py-1.5 px-2 rounded-lg border outline-none"
+                className="text-xs py-1.5 px-2 rounded-lg border outline-none input-focus cursor-pointer"
                 style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
               >
                 <option value="confidence">Confidence</option>
@@ -730,21 +730,21 @@ export function ScanView() {
             <div className="flex gap-2">
               <button
                 onClick={approveAll}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium btn-press"
                 style={{ background: "var(--success)", color: "white" }}
               >
                 Approve All
               </button>
               <button
                 onClick={rejectAll}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium btn-press"
                 style={{ background: "var(--danger)", color: "white" }}
               >
                 Reject All
               </button>
               <button
                 onClick={exportCSV}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium btn-press"
                 style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
                 title="Export results as CSV"
               >
@@ -831,7 +831,7 @@ export function ScanView() {
                           type="text"
                           value={r.proposedFolder}
                           onChange={(e) => updateResult(i, { proposedFolder: e.target.value })}
-                          className="flex-1 px-2 py-1 rounded text-xs font-mono border outline-none"
+                          className="flex-1 px-2 py-1 rounded text-xs font-mono border outline-none input-focus"
                           style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
                           placeholder="Destination folder"
                         />
@@ -839,7 +839,7 @@ export function ScanView() {
                           type="text"
                           value={r.proposedName || r.file.name}
                           onChange={(e) => updateResult(i, { proposedName: e.target.value === r.file.name ? undefined : e.target.value })}
-                          className="flex-1 px-2 py-1 rounded text-xs font-mono border outline-none"
+                          className="flex-1 px-2 py-1 rounded text-xs font-mono border outline-none input-focus"
                           style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
                           placeholder="Filename"
                         />
@@ -890,7 +890,7 @@ export function ScanView() {
               <button
                 onClick={handleApplyClick}
                 disabled={applying}
-                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold btn"
+                className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold btn btn-press"
                 style={{ background: "var(--accent)", color: "white" }}
               >
                 {applying ? (
@@ -904,7 +904,7 @@ export function ScanView() {
             <button
               onClick={resetScan}
               disabled={applying}
-              className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors btn-press"
               style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
             >
               <FolderOpen size={16} />
@@ -933,14 +933,14 @@ export function ScanView() {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowConfirm(false)}
-                className="px-4 py-2 rounded-lg text-sm font-medium"
+                className="px-4 py-2 rounded-lg text-sm font-medium btn-press"
                 style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleApply}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium btn-press"
                 style={{ background: "var(--accent)", color: "white" }}
               >
                 <ChevronRight size={14} />
