@@ -1,12 +1,41 @@
-import { useState } from "react";
-import { Bot, Key, Eye } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Bot, Key, Eye, EyeOff, Save } from "lucide-react";
+import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../../stores/appStore";
+import { useToast } from "../toast/ToastProvider";
 import { WatchPanel } from "../watch/WatchPanel";
 
 export function SettingsView() {
   const { ollamaStatus } = useAppStore();
+  const { toast } = useToast();
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
+  const [savedKey, setSavedKey] = useState("");
+
+  useEffect(() => {
+    invoke<string | null>("load_setting", { key: "cloud_api_key" }).then((val) => {
+      if (val) {
+        setApiKey(val);
+        setSavedKey(val);
+      }
+    }).catch(() => {});
+  }, []);
+
+  async function handleSaveKey() {
+    try {
+      if (apiKey.trim()) {
+        await invoke("save_setting", { key: "cloud_api_key", value: apiKey.trim() });
+        setSavedKey(apiKey.trim());
+        toast("success", "API key saved");
+      } else {
+        await invoke("remove_setting", { key: "cloud_api_key" });
+        setSavedKey("");
+        toast("info", "API key removed");
+      }
+    } catch (err) {
+      toast("error", `Failed to save API key: ${err}`);
+    }
+  }
 
   const statusColors: Record<string, string> = {
     running: "var(--success)",
@@ -23,6 +52,8 @@ export function SettingsView() {
     checking: "Checking...",
     unknown: "Unknown",
   };
+
+  const keyChanged = apiKey !== savedKey;
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
@@ -104,13 +135,16 @@ export function SettingsView() {
               className="absolute right-2 top-1/2 -translate-y-1/2"
               style={{ color: "var(--text-secondary)" }}
             >
-              <Eye size={14} />
+              {showKey ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           </div>
           <button
-            className="px-4 py-2 rounded-lg text-sm font-medium"
-            style={{ background: "var(--accent)", color: "white" }}
+            onClick={handleSaveKey}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-opacity"
+            style={{ background: "var(--accent)", color: "white", opacity: keyChanged ? 1 : 0.5 }}
+            disabled={!keyChanged}
           >
+            <Save size={14} />
             Save
           </button>
         </div>

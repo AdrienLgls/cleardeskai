@@ -3,6 +3,7 @@ import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight } from "l
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAppStore } from "../../stores/appStore";
+import { useToast } from "../toast/ToastProvider";
 
 export function ScanView() {
   const {
@@ -17,6 +18,7 @@ export function ScanView() {
     rejectAll,
     addOperation,
   } = useAppStore();
+  const { toast } = useToast();
   const [applying, setApplying] = useState(false);
 
   async function handleSelectFolder() {
@@ -37,9 +39,10 @@ export function ScanView() {
         result.classifications.map((c: Classification) => ({ ...c, approved: true }))
       );
       finishScan();
+      toast("success", `Found ${result.classifications.length} files to organize`);
     } catch (err) {
-      console.error("Scan failed:", err);
       finishScan();
+      toast("error", `Scan failed: ${err}`);
     }
   }
 
@@ -62,8 +65,9 @@ export function ScanView() {
         changes: changes.map((c) => ({ ...c, newName: c.newName ?? undefined, changeType: c.changeType as "move" | "rename" | "move_and_rename" })),
         undone: false,
       });
+      toast("success", `${approved.length} files organized successfully`);
     } catch (err) {
-      console.error("Apply failed:", err);
+      toast("error", `Failed to apply changes: ${err}`);
     }
     setApplying(false);
   }

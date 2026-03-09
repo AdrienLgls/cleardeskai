@@ -8,7 +8,7 @@ use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
 };
-use commands::{scan, organize, history, ai_status, watch, license};
+use commands::{scan, organize, history, ai_status, watch, license, settings};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -70,6 +70,9 @@ pub fn run() {
             license::get_license_info,
             license::activate_license,
             license::deactivate_license,
+            settings::save_setting,
+            settings::load_setting,
+            settings::remove_setting,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

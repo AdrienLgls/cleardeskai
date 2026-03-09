@@ -1,15 +1,33 @@
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, FolderPlus, Loader2, Trash2 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
+import { useToast } from "../toast/ToastProvider";
 
 export function WatchPanel() {
   const [running, setRunning] = useState(false);
   const [folders, setFolders] = useState<string[]>([]);
   const [interval, setIntervalVal] = useState(60);
   const [loading, setLoading] = useState(false);
+  const [detectedCount, setDetectedCount] = useState(0);
+  const { toast } = useToast();
 
   useEffect(() => { checkStatus(); }, []);
+
+  useEffect(() => {
+    const unlisten = listen<string[]>("watch-new-files", (event) => {
+      const files = event.payload;
+      setDetectedCount((prev) => prev + files.length);
+      if (files.length === 1) {
+        const name = files[0].split(/[/\\]/).pop() || files[0];
+        toast("info", `New file detected: ${name}`);
+      } else {
+        toast("info", `${files.length} new files detected in watched folders`);
+      }
+    });
+    return () => { unlisten.then((fn) => fn()); };
+  }, [toast]);
 
   async function checkStatus() {
     try {
@@ -34,12 +52,17 @@ export function WatchPanel() {
       if (running) {
         await invoke("stop_watch");
         setRunning(false);
+        setDetectedCount(0);
+        toast("success", "Watch mode stopped");
       } else {
         if (folders.length === 0) { setLoading(false); return; }
         await invoke("start_watch", { folders, intervalSecs: interval });
         setRunning(true);
+        toast("success", `Watching ${folders.length} folder(s)`);
       }
-    } catch (err) { console.error("Watch toggle failed:", err); }
+    } catch (err) {
+      toast("error", `Watch mode error: ${err}`);
+    }
     setLoading(false);
   }
 
@@ -49,6 +72,11 @@ export function WatchPanel() {
         <div className="flex items-center gap-2">
           <Eye size={18} style={{ color: "var(--accent)" }} />
           <h2 className="font-semibold" style={{ color: "var(--text-primary)" }}>Watch Mode</h2>
+          {running && detectedCount > 0 && (
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "var(--accent)", color: "white" }}>
+              {detectedCount} detected
+            </span>
+          )}
         </div>
         <button onClick={toggleWatch} disabled={loading || (!running && folders.length === 0)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium" style={{ background: running ? "var(--danger)" : "var(--success)", color: "white", opacity: loading || (!running && folders.length === 0) ? 0.5 : 1 }}>
           {loading ? <Loader2 size={12} className="animate-spin" /> : running ? <EyeOff size={12} /> : <Eye size={12} />}
