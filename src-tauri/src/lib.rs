@@ -94,6 +94,7 @@ pub fn run() {
             settings::remove_setting,
             ai_status::list_ollama_models,
             ai_status::get_current_model,
+            ai_status::install_ollama,
             watch::auto_resume_watch,
             scan::get_recent_folders,
         ])

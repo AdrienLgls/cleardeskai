@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown, Clock, RotateCcw, ArrowUpDown, Zap, Sparkles } from "lucide-react";
+import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown, Clock, RotateCcw, ArrowUpDown, Zap, Sparkles } from "lucide-react";
 
 type SortKey = "name" | "confidence" | "size" | "category";
 import { invoke } from "@tauri-apps/api/core";
@@ -67,6 +67,8 @@ export function ScanView() {
   const [applied, setApplied] = useState<number | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [pullingModel, setPullingModel] = useState(false);
+  const [installingOllama, setInstallingOllama] = useState(false);
+  const [installPhase, setInstallPhase] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const [scanPhase, setScanPhase] = useState<string>("");
   const [scanStats, setScanStats] = useState<{ ruleClassified: number; aiClassified: number }>({ ruleClassified: 0, aiClassified: 0 });
@@ -162,6 +164,27 @@ export function ScanView() {
       unlistenPromise.then((unlisten) => unlisten());
     };
   }, [setOllamaStatus, setScanFolder]);
+
+  async function handleInstallOllama() {
+    setInstallingOllama(true);
+    setInstallPhase("Downloading Ollama...");
+
+    const unlisten = await listen<{ phase: string; message: string }>(
+      "ollama-install-progress",
+      (event) => setInstallPhase(event.payload.message)
+    );
+
+    try {
+      await invoke("install_ollama");
+      setOllamaStatus("running");
+      toast("success", "Ollama installed and AI model ready!");
+    } catch (err) {
+      toast("error", `Installation failed: ${err}`);
+    }
+    unlisten();
+    setInstallingOllama(false);
+    setInstallPhase("");
+  }
 
   async function handlePullModel() {
     setPullingModel(true);
@@ -344,27 +367,44 @@ export function ScanView() {
       {ollamaStatus === "not_installed" && (
         <div
           className="rounded-xl p-5 border mb-6 animate-fade-in"
-          style={{ background: "var(--bg-secondary)", borderColor: "var(--danger)" }}
+          style={{ background: "var(--bg-secondary)", borderColor: installingOllama ? "var(--accent)" : "var(--warning)" }}
         >
           <div className="flex items-start gap-3">
-            <AlertTriangle size={20} style={{ color: "var(--danger)", flexShrink: 0, marginTop: 2 }} />
-            <div>
+            {installingOllama ? (
+              <Loader2 size={20} className="animate-spin" style={{ color: "var(--accent)", flexShrink: 0, marginTop: 2 }} />
+            ) : (
+              <Bot size={20} style={{ color: "var(--warning)", flexShrink: 0, marginTop: 2 }} />
+            )}
+            <div className="flex-1">
               <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--text-primary)" }}>
-                Ollama Not Detected
+                {installingOllama ? "Installing Ollama..." : "AI Engine (Optional)"}
               </h3>
               <p className="text-xs mb-3" style={{ color: "var(--text-secondary)" }}>
-                ClearDeskAI uses Ollama to run AI locally on your machine. Install it to start organizing files.
+                {installingOllama
+                  ? installPhase
+                  : "Most files are classified instantly by rules. Install Ollama for AI-powered classification of ambiguous files."}
               </p>
-              <button
-                onClick={() => {
-                  import("@tauri-apps/plugin-shell").then(({ open }) => open("https://ollama.com/download"));
-                }}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium btn-press"
-                style={{ background: "var(--accent)", color: "white" }}
-              >
-                <Download size={12} />
-                Download Ollama
-              </button>
+              {!installingOllama && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleInstallOllama}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium btn-press"
+                    style={{ background: "var(--accent)", color: "white" }}
+                  >
+                    <Download size={12} />
+                    Install Ollama Automatically
+                  </button>
+                  <button
+                    onClick={() => {
+                      import("@tauri-apps/plugin-shell").then(({ open }) => open("https://ollama.com/download"));
+                    }}
+                    className="px-3 py-2 rounded-lg text-xs font-medium btn-press"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Manual Install
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
