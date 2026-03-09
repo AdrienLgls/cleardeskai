@@ -123,7 +123,10 @@ fn collect_files(path: &str) -> Result<Vec<FileInfo>, String> {
         }
 
         let file_path = entry.path();
-        let metadata = fs::metadata(file_path).map_err(|e| e.to_string())?;
+        let metadata = match fs::metadata(file_path) {
+            Ok(m) => m,
+            Err(_) => continue, // Skip files with permission/symlink errors
+        };
 
         if metadata.len() < min_size {
             continue;

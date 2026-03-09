@@ -399,7 +399,7 @@ export function ScanView() {
         <div className="flex items-center gap-4">
           <button
             onClick={handleSelectFolder}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm btn"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm btn"
             style={{ background: "var(--accent)", color: "white" }}
           >
             <FolderOpen size={16} />
@@ -419,7 +419,7 @@ export function ScanView() {
         {scan.selectedFolder && !scan.scanning && scan.results.length === 0 && (
           <button
             onClick={handleScan}
-            className="flex items-center gap-2 mt-4 px-4 py-2.5 rounded-lg font-medium text-sm btn animate-pulse-glow"
+            className="flex items-center gap-2 mt-4 px-5 py-2.5 rounded-lg font-medium text-sm btn animate-pulse-glow"
             style={{ background: "var(--success)", color: "white" }}
           >
             <Play size={16} />

@@ -57,6 +57,7 @@ struct OllamaRequest {
 #[derive(Deserialize)]
 struct OllamaResponse {
     response: String,
+    thinking: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -185,8 +186,15 @@ Respond ONLY with valid JSON, no markdown."#,
         .await
         .map_err(|e| format!("Failed to parse Ollama response: {}", e))?;
 
-    let ai_result: AiClassifications = serde_json::from_str(&body.response)
-        .map_err(|e| format!("Failed to parse AI JSON: {} - Response was: {}", e, &body.response[..body.response.len().min(500)]))?;
+    // qwen3 models may put JSON in "thinking" field instead of "response"
+    let raw_json = if body.response.trim().is_empty() {
+        body.thinking.unwrap_or_default()
+    } else {
+        body.response
+    };
+
+    let ai_result: AiClassifications = serde_json::from_str(&raw_json)
+        .map_err(|e| format!("Failed to parse AI JSON: {} - Response was: {}", e, &raw_json[..raw_json.len().min(500)]))?;
 
     let classifications: Vec<Classification> = files
         .iter()
