@@ -144,6 +144,12 @@ cleardeskai/
 - [x] OS-specific onboarding (Windows/macOS/Linux)
 - [x] Configurable min file size filter
 - [x] Landing page with interactive app preview
+- [x] Batch approve/reject by category
+- [x] Sort results by name, confidence, size, or category
+- [x] Confidence threshold auto-reject
+- [x] History search & status filter
+- [x] Category color coding in scan results
+- [x] Window state persistence (size/position remembered)
 - [ ] Near-duplicate detection
 - [ ] Semantic search
 - [ ] Custom organization rules/templates
