@@ -1,4 +1,5 @@
-import { LayoutDashboard, ScanSearch, History, Settings, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { LayoutDashboard, ScanSearch, History, Settings, Sparkles, Moon, Sun } from "lucide-react";
 
 type View = "dashboard" | "scan" | "history" | "settings";
 
@@ -15,6 +16,19 @@ const navItems: { id: View; label: string; icon: typeof LayoutDashboard }[] = [
 ];
 
 export function Sidebar({ currentView, onNavigate }: SidebarProps) {
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("cleardeskai_theme") || "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("cleardeskai_theme", theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    setTheme((t) => (t === "dark" ? "light" : "dark"));
+  }
+
   return (
     <aside
       className="flex flex-col w-60 h-full border-r"
@@ -46,6 +60,17 @@ export function Sidebar({ currentView, onNavigate }: SidebarProps) {
           );
         })}
       </nav>
+
+      <div className="px-3 pb-2">
+        <button
+          onClick={toggleTheme}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          {theme === "dark" ? "Light Mode" : "Dark Mode"}
+        </button>
+      </div>
 
       <div className="px-5 py-4 text-xs" style={{ color: "var(--text-secondary)" }}>
         ClearDeskAI v1.0.0
