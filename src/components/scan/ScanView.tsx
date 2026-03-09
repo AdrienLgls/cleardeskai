@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown, Clock, RotateCcw } from "lucide-react";
+import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown, Clock, RotateCcw, ArrowUpDown } from "lucide-react";
+
+type SortKey = "name" | "confidence" | "size" | "category";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
@@ -63,6 +65,7 @@ export function ScanView() {
   const [applyProgress, setApplyProgress] = useState<{ processed: number; total: number; currentFile: string } | null>(null);
   const [lastOperationId, setLastOperationId] = useState<string | null>(null);
   const [undoing, setUndoing] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>("confidence");
   const [recentFolders, setRecentFolders] = useState<[string, string, number][]>([]);
 
   useEffect(() => {
@@ -546,8 +549,22 @@ export function ScanView() {
                 style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
               />
             </div>
+            <div className="flex items-center gap-1.5">
+              <ArrowUpDown size={12} style={{ color: "var(--text-secondary)" }} />
+              <select
+                value={sortKey}
+                onChange={(e) => setSortKey(e.target.value as SortKey)}
+                className="text-xs py-1.5 px-2 rounded-lg border outline-none"
+                style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+              >
+                <option value="confidence">Confidence</option>
+                <option value="name">Name</option>
+                <option value="size">Size</option>
+                <option value="category">Category</option>
+              </select>
+            </div>
             <h2 className="text-sm font-medium whitespace-nowrap" style={{ color: "var(--text-secondary)" }}>
-              {approvedCount}/{scan.results.length} approved
+              {approvedCount}/{scan.results.length}
             </h2>
             <div className="flex gap-2">
               <button
@@ -583,6 +600,14 @@ export function ScanView() {
                 return r.file.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q) || r.proposedFolder.toLowerCase().includes(q);
               }
               return true;
+            }).sort((a, b) => {
+              switch (sortKey) {
+                case "confidence": return b.r.confidence - a.r.confidence;
+                case "name": return a.r.file.name.localeCompare(b.r.file.name);
+                case "size": return b.r.file.size - a.r.file.size;
+                case "category": return a.r.category.localeCompare(b.r.category);
+                default: return 0;
+              }
             }).map(({ r, i }) => (
               <div
                 key={i}
