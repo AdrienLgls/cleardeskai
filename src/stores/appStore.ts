@@ -68,6 +68,7 @@ interface AppState {
   addOperation: (op: Operation) => void;
   markUndone: (operationId: string) => void;
   loadHistory: (operations: Operation[]) => void;
+  updateResult: (index: number, updates: Partial<Classification>) => void;
   resetScan: () => void;
   setOllamaStatus: (s: AppState["ollamaStatus"]) => void;
 }
@@ -161,6 +162,13 @@ export const useAppStore = create<AppState>((set) => ({
       history: operations,
       stats: computeStats(operations),
     })),
+
+  updateResult: (index, updates) =>
+    set((s) => {
+      const results = [...s.scan.results];
+      results[index] = { ...results[index], ...updates };
+      return { scan: { ...s.scan, results } };
+    }),
 
   resetScan: () =>
     set(() => ({

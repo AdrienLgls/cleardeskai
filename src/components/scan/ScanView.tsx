@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag } from "lucide-react";
+import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAppStore } from "../../stores/appStore";
@@ -17,6 +17,7 @@ export function ScanView() {
     approveAll,
     rejectAll,
     addOperation,
+    updateResult,
     resetScan,
   } = useAppStore();
   const { toast } = useToast();
@@ -219,9 +220,30 @@ export function ScanView() {
                         {(r.file.size / 1024).toFixed(0)} KB
                       </span>
                     </div>
-                    <p className="text-xs mt-1.5" style={{ color: "var(--text-secondary)" }}>
+                    <p className="text-xs mt-1.5 mb-3" style={{ color: "var(--text-secondary)" }}>
                       {r.reasoning}
                     </p>
+                    <div className="flex items-center gap-2">
+                      <Pencil size={12} style={{ color: "var(--text-secondary)" }} />
+                      <div className="flex gap-2 flex-1">
+                        <input
+                          type="text"
+                          value={r.proposedFolder}
+                          onChange={(e) => updateResult(i, { proposedFolder: e.target.value })}
+                          className="flex-1 px-2 py-1 rounded text-xs font-mono border outline-none"
+                          style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+                          placeholder="Destination folder"
+                        />
+                        <input
+                          type="text"
+                          value={r.proposedName || r.file.name}
+                          onChange={(e) => updateResult(i, { proposedName: e.target.value === r.file.name ? undefined : e.target.value })}
+                          className="flex-1 px-2 py-1 rounded text-xs font-mono border outline-none"
+                          style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+                          placeholder="Filename"
+                        />
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
