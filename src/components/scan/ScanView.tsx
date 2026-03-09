@@ -137,11 +137,23 @@ export function ScanView() {
         { path: scan.selectedFolder }
       );
       setScanProgress(result.files, result.files);
-      setScanResults(
-        result.classifications.map((c: Classification) => ({ ...c, approved: true }))
-      );
+      // Apply confidence threshold from settings
+      let threshold = 0;
+      try {
+        const t = await invoke<string | null>("load_setting", { key: "confidence_threshold" });
+        if (t) threshold = parseFloat(t);
+      } catch { /* use default */ }
+      const classified = result.classifications.map((c: Classification) => ({
+        ...c,
+        approved: threshold > 0 ? c.confidence >= threshold : true,
+      }));
+      setScanResults(classified);
       finishScan();
-      toast("success", `Found ${result.classifications.length} files to organize`);
+      const rejected = classified.filter((c) => !c.approved).length;
+      const msg = rejected > 0
+        ? `Found ${result.classifications.length} files (${rejected} auto-rejected below ${Math.round(threshold * 100)}%)`
+        : `Found ${result.classifications.length} files to organize`;
+      toast("success", msg);
     } catch (err) {
       finishScan();
       const errStr = String(err);
@@ -236,6 +248,8 @@ export function ScanView() {
   }
 
   const approvedCount = scan.results.filter((r) => r.approved).length;
+  const approvedSize = scan.results.filter((r) => r.approved).reduce((sum, r) => sum + r.file.size, 0);
+  const formatSize = (bytes: number) => bytes >= 1073741824 ? `${(bytes / 1073741824).toFixed(1)} GB` : bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${(bytes / 1024).toFixed(0)} KB`;
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
@@ -564,7 +578,7 @@ export function ScanView() {
               </select>
             </div>
             <h2 className="text-sm font-medium whitespace-nowrap" style={{ color: "var(--text-secondary)" }}>
-              {approvedCount}/{scan.results.length}
+              {approvedCount}/{scan.results.length} · {formatSize(approvedSize)}
             </h2>
             <div className="flex gap-2">
               <button

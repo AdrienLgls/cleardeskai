@@ -27,6 +27,7 @@ export function SettingsView() {
   const [scanDepth, setScanDepth] = useState("5");
   const [scanExcludes, setScanExcludes] = useState("");
   const [scanMinSize, setScanMinSize] = useState("1");
+  const [confidenceThreshold, setConfidenceThreshold] = useState("0");
   const [savedScanDepth, setSavedScanDepth] = useState("5");
   const [savedScanExcludes, setSavedScanExcludes] = useState("");
 
@@ -54,6 +55,9 @@ export function SettingsView() {
     }).catch(() => {});
     invoke<string | null>("load_setting", { key: "scan_min_size" }).then((val) => {
       if (val) setScanMinSize(val);
+    }).catch(() => {});
+    invoke<string | null>("load_setting", { key: "confidence_threshold" }).then((val) => {
+      if (val) setConfidenceThreshold(val);
     }).catch(() => {});
 
     // Check Ollama status and load models
@@ -345,6 +349,31 @@ export function SettingsView() {
               <option value="10240">10 KB</option>
               <option value="102400">100 KB</option>
             </select>
+          </div>
+
+          <div>
+            <label className="text-sm mb-1.5 block" style={{ color: "var(--text-secondary)" }}>
+              Auto-reject Confidence Threshold
+            </label>
+            <select
+              value={confidenceThreshold}
+              onChange={async (e) => {
+                setConfidenceThreshold(e.target.value);
+                await invoke("save_setting", { key: "confidence_threshold", value: e.target.value }).catch(() => {});
+                toast("success", "Confidence threshold updated");
+              }}
+              className="px-3 py-2 rounded-lg text-sm border outline-none"
+              style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+            >
+              <option value="0">Disabled (approve all)</option>
+              <option value="0.3">Below 30%</option>
+              <option value="0.5">Below 50%</option>
+              <option value="0.7">Below 70%</option>
+              <option value="0.8">Below 80%</option>
+            </select>
+            <p className="text-xs mt-1.5" style={{ color: "var(--text-secondary)", opacity: 0.7 }}>
+              Files below this confidence will be auto-rejected in scan results.
+            </p>
           </div>
 
           <div>
