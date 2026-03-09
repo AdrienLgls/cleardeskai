@@ -1,10 +1,32 @@
 import { useState, useEffect } from "react";
-import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search } from "lucide-react";
+import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAppStore } from "../../stores/appStore";
 import { useToast } from "../toast/ToastProvider";
+
+const fileIconMap: Record<string, typeof File> = {
+  // Images
+  jpg: FileImage, jpeg: FileImage, png: FileImage, gif: FileImage, svg: FileImage, webp: FileImage, bmp: FileImage, ico: FileImage,
+  // Video
+  mp4: FileVideo, mkv: FileVideo, avi: FileVideo, mov: FileVideo, wmv: FileVideo, webm: FileVideo,
+  // Audio
+  mp3: FileAudio, wav: FileAudio, flac: FileAudio, ogg: FileAudio, aac: FileAudio, m4a: FileAudio,
+  // Code
+  js: FileCode, ts: FileCode, tsx: FileCode, jsx: FileCode, py: FileCode, rs: FileCode, go: FileCode, java: FileCode, cpp: FileCode, c: FileCode, h: FileCode, css: FileCode, html: FileCode, json: FileCode, xml: FileCode, yaml: FileCode, yml: FileCode, sh: FileCode, toml: FileCode,
+  // Documents
+  pdf: FileText, doc: FileText, docx: FileText, txt: FileText, md: FileText, rtf: FileText, odt: FileText,
+  // Spreadsheets
+  xls: FileSpreadsheet, xlsx: FileSpreadsheet, csv: FileSpreadsheet, ods: FileSpreadsheet,
+  // Archives
+  zip: FileArchive, tar: FileArchive, gz: FileArchive, rar: FileArchive, "7z": FileArchive, bz2: FileArchive,
+};
+
+function getFileIcon(extension: string) {
+  const Icon = fileIconMap[extension.toLowerCase()] || File;
+  return <Icon size={14} />;
+}
 
 export function ScanView() {
   const {
@@ -460,8 +482,9 @@ export function ScanView() {
                       <X size={18} style={{ color: "var(--danger)" }} />
                     )}
                   </button>
-                  <span className="text-sm font-mono truncate flex-1" style={{ color: "var(--text-secondary)" }}>
-                    {r.file.name}
+                  <span className="flex items-center gap-1.5 text-sm font-mono truncate flex-1" style={{ color: "var(--text-secondary)" }}>
+                    <span className="flex-shrink-0" style={{ color: "var(--text-secondary)", opacity: 0.6 }}>{getFileIcon(r.file.extension)}</span>
+                    <span className="truncate">{r.file.name}</span>
                   </span>
                   <ArrowRight size={14} style={{ color: "var(--text-secondary)" }} />
                   <span className="text-sm font-mono truncate flex-1" style={{ color: "var(--text-primary)" }}>
