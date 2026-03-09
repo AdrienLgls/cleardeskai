@@ -123,11 +123,27 @@ export function HistoryView() {
 
       {history.length === 0 ? (
         <div
-          className="rounded-xl p-12 border text-center"
+          className="rounded-xl p-16 border text-center animate-fade-in"
           style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
         >
-          <Clock size={48} className="mx-auto mb-4" style={{ color: "var(--text-secondary)" }} />
-          <p style={{ color: "var(--text-secondary)" }}>No operations yet. Scan a folder to get started.</p>
+          <div className="relative inline-block mb-6">
+            <div
+              className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto"
+              style={{ background: "var(--bg-tertiary)" }}
+            >
+              <Clock size={36} style={{ color: "var(--text-secondary)", opacity: 0.5 }} />
+            </div>
+            <div
+              className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center"
+              style={{ background: "var(--accent)", boxShadow: "0 2px 8px rgba(108, 92, 231, 0.3)" }}
+            >
+              <FileText size={12} style={{ color: "white" }} />
+            </div>
+          </div>
+          <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--text-primary)" }}>No operations yet</h3>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            Scan and organize a folder to see your history here.
+          </p>
         </div>
       ) : (
         <div className="space-y-3">

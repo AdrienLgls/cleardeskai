@@ -141,22 +141,35 @@ export function Dashboard({ onNavigate }: DashboardProps) {
       </h2>
       {recentOps.length === 0 ? (
         <div
-          className="rounded-xl p-8 border text-center"
+          className="rounded-xl p-12 border text-center animate-fade-in"
           style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
         >
-          <Sparkles size={32} className="mx-auto mb-3" style={{ color: "var(--accent)", opacity: 0.5 }} />
-          <p className="font-medium mb-1" style={{ color: "var(--text-primary)" }}>
+          <div className="relative inline-block mb-6">
+            <div
+              className="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto"
+              style={{ background: "linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary))", border: "1px dashed var(--border)" }}
+            >
+              <FolderOpen size={40} style={{ color: "var(--text-secondary)", opacity: 0.4 }} />
+            </div>
+            <div
+              className="absolute -top-2 -right-2 w-10 h-10 rounded-xl flex items-center justify-center animate-bounce-in"
+              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))", boxShadow: "0 4px 12px rgba(108, 92, 231, 0.4)" }}
+            >
+              <Sparkles size={18} style={{ color: "white" }} />
+            </div>
+          </div>
+          <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
             Ready to organize
-          </p>
-          <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
-            Scan your first folder and let AI sort your files.
+          </h3>
+          <p className="text-sm mb-6 max-w-xs mx-auto" style={{ color: "var(--text-secondary)" }}>
+            Drop a folder or click below to let AI sort your files into a clean structure.
           </p>
           <button
             onClick={() => onNavigate("scan")}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
-            style={{ background: "var(--accent)" }}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white btn-press"
+            style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))", boxShadow: "0 4px 16px rgba(108, 92, 231, 0.3)" }}
           >
-            <ScanSearch size={14} />
+            <ScanSearch size={16} />
             Start Scanning
           </button>
         </div>

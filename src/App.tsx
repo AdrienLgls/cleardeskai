@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Sidebar } from "./components/layout/Sidebar";
 import { Dashboard } from "./components/dashboard/Dashboard";
@@ -22,8 +22,18 @@ interface BackendOperation {
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState<View>("dashboard");
+  const [currentView, setCurrentViewRaw] = useState<View>("dashboard");
+  const [slideDir, setSlideDir] = useState<"left" | "right">("right");
+  const prevViewRef = useRef<View>("dashboard");
   const [showShortcuts, setShowShortcuts] = useState(false);
+
+  const setCurrentView = useCallback((next: View) => {
+    const prevIdx = views.indexOf(prevViewRef.current);
+    const nextIdx = views.indexOf(next);
+    setSlideDir(nextIdx >= prevIdx ? "right" : "left");
+    prevViewRef.current = next;
+    setCurrentViewRaw(next);
+  }, []);
   const [onboarded, setOnboarded] = useState(() => {
     return localStorage.getItem("cleardeskai_onboarded") === "true";
   });
@@ -108,7 +118,7 @@ function App() {
         <Sidebar currentView={currentView} onNavigate={setCurrentView} />
         <main className="flex-1 overflow-auto" style={{ background: "var(--bg-primary)" }}>
           <ErrorBoundary>
-            <div key={currentView} className="animate-fade-in">
+            <div key={currentView} className={slideDir === "right" ? "animate-slide-in-right" : "animate-slide-in-left"}>
               {currentView === "dashboard" && <Dashboard onNavigate={setCurrentView} />}
               {currentView === "scan" && <ScanView />}
               {currentView === "history" && <HistoryView />}

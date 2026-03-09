@@ -393,38 +393,58 @@ export function ScanView() {
 
       {/* Folder Selection */}
       <div
-        className={`rounded-xl p-6 border mb-6 drop-zone ${dragOver ? "drag-over" : ""}`}
+        className={`rounded-xl border mb-6 drop-zone transition-all duration-200 ${dragOver ? "drag-over" : ""}`}
         style={{ background: "var(--bg-secondary)", borderColor: dragOver ? "var(--accent)" : "var(--border)", borderStyle: scan.selectedFolder ? "solid" : "dashed" }}
       >
-        <div className="flex items-center gap-4">
-          <button
-            onClick={handleSelectFolder}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm btn"
-            style={{ background: "var(--accent)", color: "white" }}
-          >
-            <FolderOpen size={16} />
-            Select Folder
-          </button>
-          {scan.selectedFolder ? (
-            <span className="text-sm font-mono" style={{ color: "var(--text-secondary)" }}>
-              {scan.selectedFolder}
-            </span>
-          ) : (
-            <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              or drag & drop a folder here
-            </span>
-          )}
-        </div>
-
-        {scan.selectedFolder && !scan.scanning && scan.results.length === 0 && (
-          <button
-            onClick={handleScan}
-            className="flex items-center gap-2 mt-4 px-5 py-2.5 rounded-lg font-medium text-sm btn animate-pulse-glow"
-            style={{ background: "var(--success)", color: "white" }}
-          >
-            <Play size={16} />
-            Scan & Classify
-          </button>
+        {scan.selectedFolder ? (
+          <div className="p-5">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleSelectFolder}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm btn-press"
+                style={{ background: "var(--accent)", color: "white" }}
+              >
+                <FolderOpen size={16} />
+                Change
+              </button>
+              <span className="text-sm font-mono truncate" style={{ color: "var(--text-primary)" }}>
+                {scan.selectedFolder}
+              </span>
+            </div>
+            {!scan.scanning && scan.results.length === 0 && (
+              <button
+                onClick={handleScan}
+                className="flex items-center gap-2 mt-4 px-6 py-3 rounded-xl font-semibold text-sm btn-press animate-pulse-glow"
+                style={{ background: "linear-gradient(135deg, var(--success), #00b894)", color: "white", boxShadow: "0 4px 16px rgba(0, 210, 160, 0.3)" }}
+              >
+                <Play size={16} />
+                Scan & Classify
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="p-10 text-center">
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+              style={{ background: "var(--bg-tertiary)" }}
+            >
+              <Download size={28} style={{ color: "var(--text-secondary)", opacity: 0.5 }} />
+            </div>
+            <p className="font-medium mb-1" style={{ color: "var(--text-primary)" }}>
+              Drop a folder here
+            </p>
+            <p className="text-sm mb-5" style={{ color: "var(--text-secondary)" }}>
+              or click to browse
+            </p>
+            <button
+              onClick={handleSelectFolder}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm btn-press text-white"
+              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))", boxShadow: "0 4px 16px rgba(108, 92, 231, 0.3)" }}
+            >
+              <FolderOpen size={16} />
+              Select Folder
+            </button>
+          </div>
         )}
       </div>
 
