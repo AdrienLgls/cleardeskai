@@ -13,7 +13,13 @@ export function WatchPanel() {
   const [detectedCount, setDetectedCount] = useState(0);
   const { toast } = useToast();
 
-  useEffect(() => { checkStatus(); }, []);
+  useEffect(() => {
+    checkStatus();
+    // Load saved watched folders
+    invoke<string[]>("get_saved_watched_folders").then((saved) => {
+      if (saved.length > 0) setFolders(saved);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const unlisten = listen<string[]>("watch-new-files", (event) => {
@@ -44,7 +50,11 @@ export function WatchPanel() {
     }
   }
 
-  function removeFolder(index: number) { setFolders(folders.filter((_, i) => i !== index)); }
+  function removeFolder(index: number) {
+    const folder = folders[index];
+    invoke("remove_watched_folder", { path: folder }).catch(() => {});
+    setFolders(folders.filter((_, i) => i !== index));
+  }
 
   async function toggleWatch() {
     setLoading(true);

@@ -1,14 +1,15 @@
-import { RotateCcw, Clock, FileText, Loader2, ChevronDown, ArrowRight } from "lucide-react";
+import { RotateCcw, Clock, FileText, Loader2, ChevronDown, ArrowRight, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../../stores/appStore";
 import { useToast } from "../toast/ToastProvider";
 
 export function HistoryView() {
-  const { history, markUndone } = useAppStore();
+  const { history, markUndone, loadHistory } = useAppStore();
   const { toast } = useToast();
   const [undoing, setUndoing] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [clearing, setClearing] = useState(false);
 
   async function handleUndo(operationId: string) {
     setUndoing(operationId);
@@ -22,11 +23,37 @@ export function HistoryView() {
     setUndoing(null);
   }
 
+  async function handleClearHistory() {
+    if (!confirm("Clear all history? This cannot be undone.")) return;
+    setClearing(true);
+    try {
+      await invoke("clear_history");
+      loadHistory([]);
+      toast("success", "History cleared");
+    } catch (err) {
+      toast("error", `Failed to clear history: ${err}`);
+    }
+    setClearing(false);
+  }
+
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--text-primary)" }}>
-        History
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+          History
+        </h1>
+        {history.length > 0 && (
+          <button
+            onClick={handleClearHistory}
+            disabled={clearing}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+            style={{ background: "var(--bg-tertiary)", color: "var(--danger)" }}
+          >
+            {clearing ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+            Clear History
+          </button>
+        )}
+      </div>
 
       {history.length === 0 ? (
         <div

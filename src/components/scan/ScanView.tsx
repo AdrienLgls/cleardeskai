@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil } from "lucide-react";
+import { useState, useEffect } from "react";
+import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAppStore } from "../../stores/appStore";
@@ -21,9 +21,29 @@ export function ScanView() {
     resetScan,
   } = useAppStore();
   const { toast } = useToast();
+  const { ollamaStatus, setOllamaStatus } = useAppStore();
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState<number | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [pullingModel, setPullingModel] = useState(false);
+
+  useEffect(() => {
+    invoke<{ status: string }>("check_ollama_status").then((s) => {
+      setOllamaStatus(s.status as "running" | "not_installed" | "no_model");
+    }).catch(() => {});
+  }, [setOllamaStatus]);
+
+  async function handlePullModel() {
+    setPullingModel(true);
+    try {
+      await invoke("setup_ollama");
+      setOllamaStatus("running");
+      toast("success", "AI model downloaded and ready");
+    } catch (err) {
+      toast("error", `Failed to download model: ${err}`);
+    }
+    setPullingModel(false);
+  }
 
   async function handleSelectFolder() {
     const selected = await open({ directory: true, multiple: false });
@@ -84,6 +104,73 @@ export function ScanView() {
       <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--text-primary)" }}>
         Scan & Organize
       </h1>
+
+      {/* Ollama Status Banner */}
+      {ollamaStatus === "not_installed" && (
+        <div
+          className="rounded-xl p-5 border mb-6 animate-fade-in"
+          style={{ background: "var(--bg-secondary)", borderColor: "var(--danger)" }}
+        >
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={20} style={{ color: "var(--danger)", flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--text-primary)" }}>
+                Ollama Not Detected
+              </h3>
+              <p className="text-xs mb-3" style={{ color: "var(--text-secondary)" }}>
+                ClearDeskAI uses Ollama to run AI locally on your machine. Install it to start organizing files.
+              </p>
+              <button
+                onClick={() => {
+                  import("@tauri-apps/plugin-shell").then(({ open }) => open("https://ollama.com/download"));
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+                style={{ background: "var(--accent)", color: "white" }}
+              >
+                <Download size={12} />
+                Download Ollama
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {ollamaStatus === "no_model" && (
+        <div
+          className="rounded-xl p-5 border mb-6 animate-fade-in"
+          style={{ background: "var(--bg-secondary)", borderColor: "var(--warning)" }}
+        >
+          <div className="flex items-start gap-3">
+            <Bot size={20} style={{ color: "var(--warning)", flexShrink: 0, marginTop: 2 }} />
+            <div className="flex-1">
+              <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--text-primary)" }}>
+                AI Model Required
+              </h3>
+              <p className="text-xs mb-3" style={{ color: "var(--text-secondary)" }}>
+                Ollama is running but the AI model (qwen3:4b) needs to be downloaded. This is a one-time ~2.5GB download.
+              </p>
+              <button
+                onClick={handlePullModel}
+                disabled={pullingModel}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+                style={{ background: "var(--accent)", color: "white", opacity: pullingModel ? 0.7 : 1 }}
+              >
+                {pullingModel ? (
+                  <>
+                    <Loader2 size={12} className="animate-spin" />
+                    Downloading...
+                  </>
+                ) : (
+                  <>
+                    <Download size={12} />
+                    Download Model
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Folder Selection */}
       <div

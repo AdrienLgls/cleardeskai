@@ -109,6 +109,37 @@ pub fn delete_setting(key: &str) -> Result<()> {
     Ok(())
 }
 
+// Watched folders
+pub fn add_watched_folder(path: &str, interval_secs: u64) -> Result<()> {
+    let conn = get_connection()?;
+    conn.execute(
+        "INSERT OR IGNORE INTO watched_folders (path, interval_secs) VALUES (?1, ?2)",
+        params![path, interval_secs as i64],
+    )?;
+    Ok(())
+}
+
+pub fn remove_watched_folder(path: &str) -> Result<()> {
+    let conn = get_connection()?;
+    conn.execute("DELETE FROM watched_folders WHERE path = ?1", params![path])?;
+    Ok(())
+}
+
+pub fn get_watched_folders() -> Result<Vec<(String, i64, bool)>> {
+    let conn = get_connection()?;
+    let mut stmt = conn.prepare(
+        "SELECT path, interval_secs, auto_mode FROM watched_folders"
+    )?;
+    let rows = stmt.query_map([], |row| {
+        Ok((
+            row.get::<_, String>(0)?,
+            row.get::<_, i64>(1)?,
+            row.get::<_, bool>(2)?,
+        ))
+    })?.collect::<Result<Vec<_>>>()?;
+    Ok(rows)
+}
+
 pub fn get_all_operations() -> Result<Vec<(String, String, String, bool)>> {
     let conn = get_connection()?;
     let mut stmt = conn.prepare(
@@ -123,4 +154,13 @@ pub fn get_all_operations() -> Result<Vec<(String, String, String, bool)>> {
         ))
     })?.collect::<Result<Vec<_>>>()?;
     Ok(ops)
+}
+
+pub fn clear_history() -> Result<()> {
+    let conn = get_connection()?;
+    conn.execute_batch(
+        "DELETE FROM file_changes;
+         DELETE FROM operations;"
+    )?;
+    Ok(())
 }

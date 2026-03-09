@@ -54,3 +54,9 @@ pub async fn undo_operation(operation_id: String) -> Result<(), String> {
     db::mark_undone(&operation_id).map_err(|e| e.to_string())?;
     Ok(())
 }
+
+#[tauri::command]
+pub async fn clear_history() -> Result<(), String> {
+    db::clear_history().map_err(|e| e.to_string())?;
+    Ok(())
+}

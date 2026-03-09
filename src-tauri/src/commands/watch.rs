@@ -1,3 +1,4 @@
+use crate::db;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tauri::{AppHandle, State};
@@ -32,6 +33,11 @@ pub async fn start_watch(
 
     state.running.store(true, Ordering::Relaxed);
     *state.folders.lock().await = folders.clone();
+
+    // Persist watched folders to SQLite
+    for folder in &folders {
+        let _ = db::add_watched_folder(folder, interval_secs);
+    }
 
     let running = state.running.clone();
     let watched_folders = folders.clone();
@@ -108,4 +114,16 @@ pub async fn get_watch_status(state: State<'_, WatchState>) -> Result<(bool, Vec
     let running = state.running.load(Ordering::Relaxed);
     let folders = state.folders.lock().await.clone();
     Ok((running, folders))
+}
+
+#[tauri::command]
+pub async fn get_saved_watched_folders() -> Result<Vec<String>, String> {
+    let folders = db::get_watched_folders().map_err(|e| e.to_string())?;
+    Ok(folders.into_iter().map(|(path, _, _)| path).collect())
+}
+
+#[tauri::command]
+pub async fn remove_watched_folder(path: String) -> Result<(), String> {
+    db::remove_watched_folder(&path).map_err(|e| e.to_string())?;
+    Ok(())
 }
