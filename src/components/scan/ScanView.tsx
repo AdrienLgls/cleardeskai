@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAppStore } from "../../stores/appStore";
 import { useToast } from "../toast/ToastProvider";
@@ -57,29 +58,31 @@ export function ScanView() {
   const [currentModel, setCurrentModel] = useState("qwen3:4b");
   const [appliedSummary, setAppliedSummary] = useState<{ category: string; count: number; size: number }[]>([]);
 
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault();
-    setDragOver(false);
-    const items = e.dataTransfer.items;
-    if (items && items.length > 0) {
-      const item = items[0];
-      if (item.kind === "file") {
-        const file = item.getAsFile();
-        if (file) {
-          // Tauri drops provide the path via file name for directories
-          const path = (file as File & { path?: string }).path || file.name;
-          if (path) setScanFolder(path);
-        }
-      }
-    }
-  }
-
   useEffect(() => {
     invoke<{ status: string }>("check_ollama_status").then((s) => {
       setOllamaStatus(s.status as "running" | "not_installed" | "no_model");
     }).catch(() => {});
     invoke<string>("get_current_model").then(setCurrentModel).catch(() => {});
-  }, [setOllamaStatus]);
+
+    // Tauri native drag-and-drop — gives real filesystem paths
+    const unlistenPromise = getCurrentWebview().onDragDropEvent((event) => {
+      if (event.payload.type === "over") {
+        setDragOver(true);
+      } else if (event.payload.type === "drop") {
+        setDragOver(false);
+        const paths = event.payload.paths;
+        if (paths.length > 0) {
+          setScanFolder(paths[0]);
+        }
+      } else if (event.payload.type === "leave") {
+        setDragOver(false);
+      }
+    });
+
+    return () => {
+      unlistenPromise.then((unlisten) => unlisten());
+    };
+  }, [setOllamaStatus, setScanFolder]);
 
   async function handlePullModel() {
     setPullingModel(true);
@@ -289,10 +292,7 @@ export function ScanView() {
       {/* Folder Selection */}
       <div
         className={`rounded-xl p-6 border mb-6 drop-zone ${dragOver ? "drag-over" : ""}`}
-        style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", borderStyle: scan.selectedFolder ? "solid" : "dashed" }}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={handleDrop}
+        style={{ background: "var(--bg-secondary)", borderColor: dragOver ? "var(--accent)" : "var(--border)", borderStyle: scan.selectedFolder ? "solid" : "dashed" }}
       >
         <div className="flex items-center gap-4">
           <button
