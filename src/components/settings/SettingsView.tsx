@@ -28,7 +28,6 @@ export function SettingsView() {
   const [scanExcludes, setScanExcludes] = useState("");
   const [scanMinSize, setScanMinSize] = useState("1");
   const [confidenceThreshold, setConfidenceThreshold] = useState("0");
-  const [savedScanDepth, setSavedScanDepth] = useState("5");
   const [savedScanExcludes, setSavedScanExcludes] = useState("");
 
   useEffect(() => {
@@ -48,7 +47,7 @@ export function SettingsView() {
 
     // Load scan settings
     invoke<string | null>("load_setting", { key: "scan_depth" }).then((val) => {
-      if (val) { setScanDepth(val); setSavedScanDepth(val); }
+      if (val) { setScanDepth(val); }
     }).catch(() => {});
     invoke<string | null>("load_setting", { key: "scan_excludes" }).then((val) => {
       if (val) { setScanExcludes(val); setSavedScanExcludes(val); }
@@ -314,7 +313,6 @@ export function SettingsView() {
               onChange={async (e) => {
                 setScanDepth(e.target.value);
                 await invoke("save_setting", { key: "scan_depth", value: e.target.value }).catch(() => {});
-                setSavedScanDepth(e.target.value);
                 toast("success", `Scan depth set to ${e.target.value}`);
               }}
               className="px-3 py-2 rounded-lg text-sm border outline-none"
