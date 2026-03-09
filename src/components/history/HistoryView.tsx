@@ -1,16 +1,24 @@
-import { RotateCcw, Clock, FileText } from "lucide-react";
+import { RotateCcw, Clock, FileText, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../../stores/appStore";
+import { useToast } from "../toast/ToastProvider";
 
 export function HistoryView() {
-  const { history } = useAppStore();
+  const { history, markUndone } = useAppStore();
+  const { toast } = useToast();
+  const [undoing, setUndoing] = useState<string | null>(null);
 
   async function handleUndo(operationId: string) {
+    setUndoing(operationId);
     try {
       await invoke("undo_operation", { operationId });
+      markUndone(operationId);
+      toast("success", "Operation undone — files restored");
     } catch (err) {
-      console.error("Undo failed:", err);
+      toast("error", `Undo failed: ${err}`);
     }
+    setUndoing(null);
   }
 
   return (
@@ -32,7 +40,7 @@ export function HistoryView() {
           {history.map((op) => (
             <div
               key={op.id}
-              className="rounded-xl p-5 border"
+              className="rounded-xl p-5 border transition-opacity"
               style={{
                 background: "var(--bg-secondary)",
                 borderColor: "var(--border)",
@@ -49,10 +57,15 @@ export function HistoryView() {
                 {!op.undone && (
                   <button
                     onClick={() => handleUndo(op.id)}
+                    disabled={undoing === op.id}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                     style={{ background: "var(--bg-tertiary)", color: "var(--warning)" }}
                   >
-                    <RotateCcw size={12} />
+                    {undoing === op.id ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : (
+                      <RotateCcw size={12} />
+                    )}
                     Undo
                   </button>
                 )}

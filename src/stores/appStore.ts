@@ -66,7 +66,19 @@ interface AppState {
   approveAll: () => void;
   rejectAll: () => void;
   addOperation: (op: Operation) => void;
+  markUndone: (operationId: string) => void;
+  loadHistory: (operations: Operation[]) => void;
   setOllamaStatus: (s: AppState["ollamaStatus"]) => void;
+}
+
+function computeStats(history: Operation[]): Stats {
+  const active = history.filter((op) => !op.undone);
+  const filesOrganized = active.reduce((sum, op) => sum + op.changes.length, 0);
+  return {
+    filesOrganized,
+    totalOperations: active.length,
+    timeSavedMinutes: Math.ceil(filesOrganized * 0.5),
+  };
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -130,14 +142,23 @@ export const useAppStore = create<AppState>((set) => ({
     })),
 
   addOperation: (op) =>
-    set((s) => ({
-      history: [op, ...s.history],
-      stats: {
-        ...s.stats,
-        filesOrganized: s.stats.filesOrganized + op.changes.length,
-        totalOperations: s.stats.totalOperations + 1,
-        timeSavedMinutes: s.stats.timeSavedMinutes + Math.ceil(op.changes.length * 0.5),
-      },
+    set((s) => {
+      const history = [op, ...s.history];
+      return { history, stats: computeStats(history) };
+    }),
+
+  markUndone: (operationId) =>
+    set((s) => {
+      const history = s.history.map((op) =>
+        op.id === operationId ? { ...op, undone: true } : op
+      );
+      return { history, stats: computeStats(history) };
+    }),
+
+  loadHistory: (operations) =>
+    set(() => ({
+      history: operations,
+      stats: computeStats(operations),
     })),
 
   setOllamaStatus: (ollamaStatus) => set({ ollamaStatus }),

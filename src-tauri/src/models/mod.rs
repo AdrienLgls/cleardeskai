@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FileInfo {
     pub path: String,
     pub name: String,
@@ -12,6 +13,7 @@ pub struct FileInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Classification {
     pub file: FileInfo,
     pub proposed_folder: String,
@@ -22,6 +24,7 @@ pub struct Classification {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FileChange {
     pub source: String,
     pub destination: String,
@@ -30,6 +33,7 @@ pub struct FileChange {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Operation {
     pub id: String,
     pub timestamp: String,
@@ -39,17 +43,20 @@ pub struct Operation {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ScanResult {
     pub files: usize,
     pub classifications: Vec<Classification>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ApplyResult {
     pub operation_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OllamaStatus {
     pub status: String,
     pub model: Option<String>,
