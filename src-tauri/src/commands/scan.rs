@@ -27,13 +27,27 @@ pub async fn scan_folder(path: String) -> Result<ScanResult, String> {
 fn collect_files(path: &str) -> Result<Vec<FileInfo>, String> {
     let mut files = Vec::new();
 
-    for entry in WalkDir::new(path).max_depth(5).into_iter().filter_map(|e| e.ok()) {
+    let walker = WalkDir::new(path)
+        .max_depth(5)
+        .into_iter()
+        .filter_entry(|e| {
+            // Skip hidden dirs and common system folders
+            let name = e.file_name().to_string_lossy();
+            !name.starts_with('.') && name != "node_modules" && name != "__pycache__" && name != "Thumbs.db"
+        });
+
+    for entry in walker.filter_map(|e| e.ok()) {
         if !entry.file_type().is_file() {
             continue;
         }
 
         let file_path = entry.path();
         let metadata = fs::metadata(file_path).map_err(|e| e.to_string())?;
+
+        // Skip zero-byte files
+        if metadata.len() == 0 {
+            continue;
+        }
 
         let name = file_path
             .file_name()
