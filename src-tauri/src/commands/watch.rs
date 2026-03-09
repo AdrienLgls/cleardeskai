@@ -1,7 +1,9 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use tauri::State;
+use tauri::{AppHandle, State};
+use tauri_plugin_notification::NotificationExt;
 use tokio::sync::Mutex;
+use walkdir::WalkDir;
 
 pub struct WatchState {
     pub running: Arc<AtomicBool>,
@@ -19,6 +21,7 @@ impl Default for WatchState {
 
 #[tauri::command]
 pub async fn start_watch(
+    app: AppHandle,
     state: State<'_, WatchState>,
     folders: Vec<String>,
     interval_secs: u64,
@@ -31,14 +34,62 @@ pub async fn start_watch(
     *state.folders.lock().await = folders.clone();
 
     let running = state.running.clone();
-    let _folders = folders.clone();
+    let watched_folders = folders.clone();
 
     tokio::spawn(async move {
         let interval = std::time::Duration::from_secs(interval_secs);
+        let mut known_files: std::collections::HashSet<String> = std::collections::HashSet::new();
+
+        // Initial scan to populate known files
+        for folder in &watched_folders {
+            for entry in WalkDir::new(folder).max_depth(3).into_iter().filter_map(|e| e.ok()) {
+                if entry.file_type().is_file() {
+                    known_files.insert(entry.path().to_string_lossy().to_string());
+                }
+            }
+        }
+
         while running.load(Ordering::Relaxed) {
-            // TODO: scan folders for new files and classify them
-            // For now, just sleep and check again
             tokio::time::sleep(interval).await;
+
+            if !running.load(Ordering::Relaxed) {
+                break;
+            }
+
+            let mut new_files = Vec::new();
+            let mut current_files: std::collections::HashSet<String> = std::collections::HashSet::new();
+
+            for folder in &watched_folders {
+                for entry in WalkDir::new(folder).max_depth(3).into_iter().filter_map(|e| e.ok()) {
+                    if entry.file_type().is_file() {
+                        let path = entry.path().to_string_lossy().to_string();
+                        if !known_files.contains(&path) {
+                            new_files.push(path.clone());
+                        }
+                        current_files.insert(path);
+                    }
+                }
+            }
+
+            if !new_files.is_empty() {
+                let count = new_files.len();
+                let body = if count == 1 {
+                    format!("New file detected: {}", new_files[0].rsplit('/').next().unwrap_or(&new_files[0]))
+                } else {
+                    format!("{} new files detected in watched folders", count)
+                };
+
+                let _ = app.notification()
+                    .builder()
+                    .title("ClearDeskAI")
+                    .body(&body)
+                    .show();
+
+                // Emit event to frontend
+                let _ = tauri::Emitter::emit(&app, "watch-new-files", &new_files);
+            }
+
+            known_files = current_files;
         }
     });
 

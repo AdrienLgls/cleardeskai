@@ -3,7 +3,11 @@ mod models;
 mod db;
 mod ai;
 
-use tauri::Manager;
+use tauri::{
+    Manager,
+    menu::{Menu, MenuItem},
+    tray::TrayIconBuilder,
+};
 use commands::{scan, organize, history, ai_status, watch, license};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -16,6 +20,8 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .setup(|app| {
             let app_handle = app.handle().clone();
+
+            // Database init
             let db_path = app_handle
                 .path()
                 .app_data_dir()
@@ -23,6 +29,32 @@ pub fn run() {
             std::fs::create_dir_all(&db_path).ok();
             let db_file = db_path.join("cleardeskai.db");
             db::init(&db_file).expect("failed to init database");
+
+            // System tray
+            let show = MenuItem::with_id(app, "show", "Show ClearDeskAI", true, None::<&str>)?;
+            let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&show, &quit])?;
+
+            let _tray = TrayIconBuilder::new()
+                .icon(app.default_window_icon().cloned().unwrap())
+                .menu(&menu)
+                .tooltip("ClearDeskAI")
+                .on_menu_event(move |app, event| {
+                    match event.id.as_ref() {
+                        "show" => {
+                            if let Some(window) = app.get_webview_window("main") {
+                                let _ = window.show();
+                                let _ = window.set_focus();
+                            }
+                        }
+                        "quit" => {
+                            app.exit(0);
+                        }
+                        _ => {}
+                    }
+                })
+                .build(app)?;
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
