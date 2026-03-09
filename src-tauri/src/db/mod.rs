@@ -1,0 +1,101 @@
+use rusqlite::{Connection, Result, params};
+use std::path::Path;
+use once_cell::sync::OnceCell;
+
+static DB_PATH: OnceCell<String> = OnceCell::new();
+
+fn get_connection() -> Result<Connection> {
+    let path = DB_PATH.get().expect("DB not initialized");
+    Connection::open(path)
+}
+
+pub fn init(path: &Path) -> Result<()> {
+    DB_PATH.set(path.to_string_lossy().to_string()).ok();
+    let conn = Connection::open(path)?;
+
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS operations (
+            id TEXT PRIMARY KEY,
+            timestamp TEXT NOT NULL,
+            description TEXT NOT NULL,
+            undone INTEGER NOT NULL DEFAULT 0
+        );
+
+        CREATE TABLE IF NOT EXISTS file_changes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            operation_id TEXT NOT NULL,
+            source_path TEXT NOT NULL,
+            dest_path TEXT NOT NULL,
+            new_name TEXT,
+            change_type TEXT NOT NULL,
+            FOREIGN KEY (operation_id) REFERENCES operations(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS watched_folders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            path TEXT NOT NULL UNIQUE,
+            interval_secs INTEGER NOT NULL DEFAULT 60,
+            auto_mode INTEGER NOT NULL DEFAULT 0,
+            last_scan TEXT
+        );"
+    )?;
+    Ok(())
+}
+
+pub fn save_operation(id: &str, timestamp: &str, description: &str, changes: &[(String, String, Option<String>, String)]) -> Result<()> {
+    let conn = get_connection()?;
+    conn.execute(
+        "INSERT INTO operations (id, timestamp, description, undone) VALUES (?1, ?2, ?3, 0)",
+        params![id, timestamp, description],
+    )?;
+    for (source, dest, new_name, change_type) in changes {
+        conn.execute(
+            "INSERT INTO file_changes (operation_id, source_path, dest_path, new_name, change_type) VALUES (?1, ?2, ?3, ?4, ?5)",
+            params![id, source, dest, new_name, change_type],
+        )?;
+    }
+    Ok(())
+}
+
+pub fn get_operation_changes(operation_id: &str) -> Result<Vec<(String, String, Option<String>, String)>> {
+    let conn = get_connection()?;
+    let mut stmt = conn.prepare(
+        "SELECT source_path, dest_path, new_name, change_type FROM file_changes WHERE operation_id = ?1"
+    )?;
+    let changes = stmt.query_map(params![operation_id], |row| {
+        Ok((
+            row.get::<_, String>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, Option<String>>(2)?,
+            row.get::<_, String>(3)?,
+        ))
+    })?.collect::<Result<Vec<_>>>()?;
+    Ok(changes)
+}
+
+pub fn mark_undone(operation_id: &str) -> Result<()> {
+    let conn = get_connection()?;
+    conn.execute("UPDATE operations SET undone = 1 WHERE id = ?1", params![operation_id])?;
+    Ok(())
+}
+
+pub fn get_all_operations() -> Result<Vec<(String, String, String, bool)>> {
+    let conn = get_connection()?;
+    let mut stmt = conn.prepare(
+        "SELECT id, timestamp, description, undone FROM operations ORDER BY timestamp DESC"
+    )?;
+    let ops = stmt.query_map([], |row| {
+        Ok((
+            row.get::<_, String>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, String>(2)?,
+            row.get::<_, bool>(3)?,
+        ))
+    })?.collect::<Result<Vec<_>>>()?;
+    Ok(ops)
+}
