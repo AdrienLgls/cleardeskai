@@ -161,7 +161,7 @@ export function SettingsView() {
 
       {/* License */}
       <section
-        className="rounded-xl p-6 border mb-6"
+        className="rounded-xl p-6 border mb-6 settings-section"
         style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
       >
         <div className="flex items-center gap-2 mb-4">
@@ -204,7 +204,7 @@ export function SettingsView() {
                 value={licenseKey}
                 onChange={(e) => setLicenseKey(e.target.value.toUpperCase())}
                 placeholder="CDAI-PRO-XXXX-XXXX-XXXX"
-                className="flex-1 px-3 py-2 rounded-lg text-sm border outline-none font-mono"
+                className="flex-1 px-3 py-2 rounded-lg text-sm border outline-none font-mono input-focus"
                 style={{
                   background: "var(--bg-tertiary)",
                   borderColor: "var(--border)",
@@ -214,7 +214,7 @@ export function SettingsView() {
               <button
                 onClick={handleActivateLicense}
                 disabled={activating || !licenseKey.trim()}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium btn-press"
                 style={{
                   background: "var(--accent)",
                   color: "white",
@@ -231,7 +231,7 @@ export function SettingsView() {
 
       {/* AI Engine */}
       <section
-        className="rounded-xl p-6 border mb-6"
+        className="rounded-xl p-6 border mb-6 settings-section"
         style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
       >
         <div className="flex items-center gap-2 mb-4">
@@ -293,7 +293,7 @@ export function SettingsView() {
 
       {/* Scan Settings */}
       <section
-        className="rounded-xl p-6 border mb-6"
+        className="rounded-xl p-6 border mb-6 settings-section"
         style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
       >
         <div className="flex items-center gap-2 mb-4">
@@ -384,7 +384,7 @@ export function SettingsView() {
                 value={scanExcludes}
                 onChange={(e) => setScanExcludes(e.target.value)}
                 placeholder="e.g. backups, old_files, temp"
-                className="flex-1 px-3 py-2 rounded-lg text-sm border outline-none"
+                className="flex-1 px-3 py-2 rounded-lg text-sm border outline-none input-focus"
                 style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
               />
               <button
@@ -415,7 +415,7 @@ export function SettingsView() {
 
       {/* BYOK */}
       <section
-        className="rounded-xl p-6 border mb-6"
+        className="rounded-xl p-6 border mb-6 settings-section"
         style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
       >
         <div className="flex items-center gap-2 mb-4">
@@ -434,7 +434,7 @@ export function SettingsView() {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="sk-... or sk-ant-..."
-              className="w-full px-3 py-2 rounded-lg text-sm border outline-none"
+              className="w-full px-3 py-2 rounded-lg text-sm border outline-none input-focus"
               style={{
                 background: "var(--bg-tertiary)",
                 borderColor: "var(--border)",
@@ -463,7 +463,7 @@ export function SettingsView() {
 
       {/* About & Data */}
       <section
-        className="rounded-xl p-6 border mb-6"
+        className="rounded-xl p-6 border mb-6 settings-section"
         style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
       >
         <div className="flex items-center gap-2 mb-4">

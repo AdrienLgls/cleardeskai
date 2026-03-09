@@ -82,7 +82,7 @@ export function WatchPanel() {
   }
 
   return (
-    <section className="rounded-xl p-6 border" style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}>
+    <section className="rounded-xl p-6 border settings-section" style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Eye size={18} style={{ color: "var(--accent)" }} />

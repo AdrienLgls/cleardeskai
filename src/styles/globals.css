@@ -260,3 +260,33 @@ body {
 .animate-success-ring {
   animation: successRing 1.5s ease-out;
 }
+
+/* Toast countdown timer */
+@keyframes toastTimer {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+.toast-timer {
+  animation: toastTimer linear forwards;
+}
+
+/* Settings section hover */
+.settings-section {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.settings-section:hover {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 1px rgba(108, 92, 231, 0.1), 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+[data-theme="dark"] .settings-section:hover {
+  box-shadow: 0 0 0 1px rgba(108, 92, 231, 0.15), 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Focus ring for inputs */
+.input-focus {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input-focus:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.15);
+}

@@ -3,11 +3,14 @@ import { CheckCircle, XCircle, AlertTriangle, Info, X } from "lucide-react";
 
 type ToastType = "success" | "error" | "warning" | "info";
 
+const TOAST_DURATION = 4000;
+
 interface Toast {
   id: string;
   type: ToastType;
   message: string;
   exiting?: boolean;
+  createdAt: number;
 }
 
 interface ToastContextValue {
@@ -46,8 +49,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const toast = useCallback((type: ToastType, message: string) => {
     const id = Math.random().toString(36).slice(2);
-    setToasts((prev) => [...prev, { id, type, message }]);
-    setTimeout(() => removeToast(id), 4000);
+    setToasts((prev) => [...prev, { id, type, message, createdAt: Date.now() }]);
+    setTimeout(() => removeToast(id), TOAST_DURATION);
   }, [removeToast]);
 
   return (
@@ -56,17 +59,26 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none" style={{ maxWidth: 360 }}>
         {toasts.map((t) => {
           const Icon = icons[t.type];
+          const color = colors[t.type];
           return (
             <div
               key={t.id}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl border pointer-events-auto ${t.exiting ? "animate-toast-out" : "animate-toast-in"}`}
-              style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}
+              className={`relative overflow-hidden rounded-xl border pointer-events-auto ${t.exiting ? "animate-toast-out" : "animate-toast-in"}`}
+              style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", boxShadow: `0 8px 24px rgba(0,0,0,0.4), inset 3px 0 0 ${color}` }}
             >
-              <Icon size={18} style={{ color: colors[t.type], flexShrink: 0 }} />
-              <span className="text-sm flex-1" style={{ color: "var(--text-primary)" }}>{t.message}</span>
-              <button onClick={() => removeToast(t.id)} className="flex-shrink-0" style={{ color: "var(--text-secondary)" }}>
-                <X size={14} />
-              </button>
+              <div className="flex items-center gap-3 px-4 py-3">
+                <Icon size={18} style={{ color, flexShrink: 0 }} />
+                <span className="text-sm flex-1" style={{ color: "var(--text-primary)" }}>{t.message}</span>
+                <button onClick={() => removeToast(t.id)} className="flex-shrink-0 transition-colors" style={{ color: "var(--text-secondary)" }}>
+                  <X size={14} />
+                </button>
+              </div>
+              {!t.exiting && (
+                <div
+                  className="absolute bottom-0 left-0 h-[2px] toast-timer"
+                  style={{ background: color, animationDuration: `${TOAST_DURATION}ms` }}
+                />
+              )}
             </div>
           );
         })}
