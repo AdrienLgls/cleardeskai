@@ -4,7 +4,7 @@ mod db;
 mod ai;
 
 use tauri::Manager;
-use commands::{scan, organize, history, ai_status, watch};
+use commands::{scan, organize, history, ai_status, watch, license};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -35,6 +35,9 @@ pub fn run() {
             watch::start_watch,
             watch::stop_watch,
             watch::get_watch_status,
+            license::get_license_info,
+            license::activate_license,
+            license::deactivate_license,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

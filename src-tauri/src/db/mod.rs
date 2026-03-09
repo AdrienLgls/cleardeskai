@@ -84,6 +84,31 @@ pub fn mark_undone(operation_id: &str) -> Result<()> {
     Ok(())
 }
 
+pub fn get_setting(key: &str) -> Result<Option<String>> {
+    let conn = get_connection()?;
+    let mut stmt = conn.prepare("SELECT value FROM settings WHERE key = ?1")?;
+    let mut rows = stmt.query_map(params![key], |row| row.get::<_, String>(0))?;
+    match rows.next() {
+        Some(Ok(val)) => Ok(Some(val)),
+        _ => Ok(None),
+    }
+}
+
+pub fn set_setting(key: &str, value: &str) -> Result<()> {
+    let conn = get_connection()?;
+    conn.execute(
+        "INSERT OR REPLACE INTO settings (key, value) VALUES (?1, ?2)",
+        params![key, value],
+    )?;
+    Ok(())
+}
+
+pub fn delete_setting(key: &str) -> Result<()> {
+    let conn = get_connection()?;
+    conn.execute("DELETE FROM settings WHERE key = ?1", params![key])?;
+    Ok(())
+}
+
 pub fn get_all_operations() -> Result<Vec<(String, String, String, bool)>> {
     let conn = get_connection()?;
     let mut stmt = conn.prepare(
