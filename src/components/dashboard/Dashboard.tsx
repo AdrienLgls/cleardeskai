@@ -1,4 +1,6 @@
-import { FolderOpen, ScanSearch, Clock, Sparkles, Settings, FileText, RotateCcw } from "lucide-react";
+import { useState, useEffect } from "react";
+import { FolderOpen, ScanSearch, Clock, Sparkles, Settings, FileText, RotateCcw, Bot, Eye } from "lucide-react";
+import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../../stores/appStore";
 
 type View = "dashboard" | "scan" | "history" | "settings";
@@ -8,9 +10,21 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onNavigate }: DashboardProps) {
-  const { stats, history } = useAppStore();
+  const { stats, history, ollamaStatus, setOllamaStatus } = useAppStore();
+  const [watchRunning, setWatchRunning] = useState(false);
+  const [watchFolderCount, setWatchFolderCount] = useState(0);
 
   const recentOps = history.slice(0, 5);
+
+  useEffect(() => {
+    invoke<{ status: string }>("check_ollama_status").then((s) => {
+      setOllamaStatus(s.status as "running" | "not_installed" | "no_model");
+    }).catch(() => {});
+    invoke<[boolean, string[]]>("get_watch_status").then(([running, folders]) => {
+      setWatchRunning(running);
+      setWatchFolderCount(folders.length);
+    }).catch(() => {});
+  }, [setOllamaStatus]);
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
@@ -40,6 +54,32 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           label="Operations"
           value={stats.totalOperations.toString()}
         />
+      </div>
+
+      {/* Status Bar */}
+      <div className="flex gap-4 mb-8">
+        <div
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border flex-1 cursor-pointer hover-lift"
+          style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+          onClick={() => onNavigate("settings")}
+        >
+          <Bot size={16} style={{ color: ollamaStatus === "running" ? "var(--success)" : ollamaStatus === "no_model" ? "var(--warning)" : "var(--danger)" }} />
+          <span className="text-sm" style={{ color: "var(--text-secondary)" }}>AI Engine</span>
+          <span className="text-sm font-medium ml-auto" style={{ color: ollamaStatus === "running" ? "var(--success)" : "var(--danger)" }}>
+            {ollamaStatus === "running" ? "Ready" : ollamaStatus === "no_model" ? "No Model" : "Offline"}
+          </span>
+        </div>
+        <div
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border flex-1 cursor-pointer hover-lift"
+          style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+          onClick={() => onNavigate("settings")}
+        >
+          <Eye size={16} style={{ color: watchRunning ? "var(--success)" : "var(--text-secondary)" }} />
+          <span className="text-sm" style={{ color: "var(--text-secondary)" }}>Watch Mode</span>
+          <span className="text-sm font-medium ml-auto" style={{ color: watchRunning ? "var(--success)" : "var(--text-secondary)" }}>
+            {watchRunning ? `${watchFolderCount} folder${watchFolderCount !== 1 ? "s" : ""}` : "Off"}
+          </span>
+        </div>
       </div>
 
       {/* Quick Actions */}
