@@ -125,13 +125,19 @@ cleardeskai/
 ## Roadmap
 
 - [x] Core scan & organize engine
-- [x] Ollama integration
-- [x] Preview & approve workflow
-- [x] Undo system
-- [x] Watch mode
+- [x] Ollama integration with configurable model
+- [x] Preview & approve workflow with search/filter
+- [x] Undo system with file manager integration
+- [x] Watch mode with auto-resume
 - [x] Onboarding flow
+- [x] System tray with minimize-to-tray
+- [x] Dark/light theme
+- [x] Keyboard shortcuts (Ctrl+1-4, Ctrl+Z, Ctrl+/)
+- [x] Real-time scan progress
+- [x] License system (Free/Pro/Premium)
 - [ ] Near-duplicate detection
 - [ ] Semantic search
+- [ ] Custom organization rules/templates
 - [ ] Cloud drive integration (Google Drive, Dropbox)
 - [ ] User preference learning
 

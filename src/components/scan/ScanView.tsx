@@ -33,6 +33,7 @@ export function ScanView() {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [currentModel, setCurrentModel] = useState("qwen3:4b");
+  const [appliedSummary, setAppliedSummary] = useState<{ category: string; count: number; size: number }[]>([]);
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
@@ -146,6 +147,17 @@ export function ScanView() {
         changes: changes.map((c) => ({ ...c, newName: c.newName ?? undefined, changeType: c.changeType as "move" | "rename" | "move_and_rename" })),
         undone: false,
       });
+      // Build category summary for success screen
+      const catMap = new Map<string, { count: number; size: number }>();
+      for (const r of approved) {
+        const existing = catMap.get(r.category) || { count: 0, size: 0 };
+        catMap.set(r.category, { count: existing.count + 1, size: existing.size + r.file.size });
+      }
+      setAppliedSummary(
+        Array.from(catMap.entries())
+          .map(([category, { count, size }]) => ({ category, count, size }))
+          .sort((a, b) => b.count - a.count)
+      );
       setApplied(approved.length);
       toast("success", `${approved.length} files organized successfully`);
     } catch (err) {
@@ -305,11 +317,27 @@ export function ScanView() {
           <h2 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
             {applied} files organized!
           </h2>
-          <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
+          <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
             All changes have been applied. You can undo this from the History page.
           </p>
+          {appliedSummary.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-3 mb-6">
+              {appliedSummary.map((s) => (
+                <div
+                  key={s.category}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs"
+                  style={{ background: "var(--bg-tertiary)" }}
+                >
+                  <span className="font-medium" style={{ color: "var(--text-primary)" }}>{s.category}</span>
+                  <span style={{ color: "var(--text-secondary)" }}>
+                    {s.count} file{s.count !== 1 ? "s" : ""} · {s.size >= 1048576 ? `${(s.size / 1048576).toFixed(1)} MB` : `${(s.size / 1024).toFixed(0)} KB`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
           <button
-            onClick={() => { resetScan(); setApplied(null); }}
+            onClick={() => { resetScan(); setApplied(null); setAppliedSummary([]); }}
             className="flex items-center gap-2 mx-auto px-5 py-2.5 rounded-lg font-medium text-sm"
             style={{ background: "var(--accent)", color: "white" }}
           >
