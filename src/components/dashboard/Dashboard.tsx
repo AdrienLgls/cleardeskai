@@ -178,12 +178,13 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           {recentOps.map((op) => (
             <div
               key={op.id}
-              className="flex items-center justify-between rounded-xl px-5 py-3 border"
+              className="flex items-center justify-between rounded-xl px-5 py-3 border hover-lift cursor-pointer"
               style={{
                 background: "var(--bg-secondary)",
                 borderColor: "var(--border)",
                 opacity: op.undone ? 0.5 : 1,
               }}
+              onClick={() => onNavigate("history")}
             >
               <div className="flex items-center gap-3">
                 {op.undone ? (

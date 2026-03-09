@@ -73,7 +73,7 @@ export function HistoryView() {
           <button
             onClick={() => setShowClearConfirm(true)}
             disabled={clearing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium btn-press"
             style={{ background: "var(--bg-tertiary)", color: "var(--danger)" }}
           >
             {clearing ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
@@ -94,7 +94,7 @@ export function HistoryView() {
               placeholder="Search operations or filenames..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-transparent outline-none text-sm flex-1"
+              className="bg-transparent outline-none text-sm flex-1 input-focus"
               style={{ color: "var(--text-primary)" }}
             />
             {search && (
@@ -146,7 +146,7 @@ export function HistoryView() {
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 stagger-in">
           {filtered.length === 0 && (
             <div
               className="rounded-xl p-8 border text-center"
@@ -161,7 +161,7 @@ export function HistoryView() {
           {filtered.map((op) => (
             <div
               key={op.id}
-              className="rounded-xl border transition-opacity overflow-hidden"
+              className="rounded-xl border transition-all overflow-hidden hover-lift"
               style={{
                 background: "var(--bg-secondary)",
                 borderColor: "var(--border)",
@@ -181,7 +181,7 @@ export function HistoryView() {
                       <button
                         onClick={() => handleUndo(op.id)}
                         disabled={undoing === op.id}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors btn-press"
                         style={{ background: "var(--bg-tertiary)", color: "var(--warning)" }}
                       >
                         {undoing === op.id ? (
@@ -261,14 +261,14 @@ export function HistoryView() {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowClearConfirm(false)}
-                className="px-4 py-2 rounded-lg text-sm font-medium"
+                className="px-4 py-2 rounded-lg text-sm font-medium btn-press"
                 style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleClearHistory}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium btn-press"
                 style={{ background: "var(--danger)", color: "white" }}
               >
                 <Trash2 size={14} />
