@@ -57,35 +57,44 @@ export function OnboardingView({ onComplete }: OnboardingProps) {
   }
 
   return (
-    <div className="flex items-center justify-center h-screen w-screen" style={{ background: "var(--bg-primary)" }}>
-      <div className="max-w-lg w-full px-8">
+    <div className="flex items-center justify-center h-screen w-screen relative overflow-hidden" style={{ background: "var(--bg-primary)" }}>
+      {/* Background glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] opacity-30 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(108, 92, 231, 0.2) 0%, transparent 70%)" }} />
+      <div className="max-w-lg w-full px-8 relative z-10">
 
         {step === "welcome" && (
-          <div className="text-center">
-            <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ background: "var(--bg-tertiary)" }}>
-              <Sparkles size={40} style={{ color: "var(--accent)" }} />
+          <div className="text-center animate-fade-in">
+            <div
+              className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-8 animate-bounce-in"
+              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))", boxShadow: "0 8px 32px rgba(108, 92, 231, 0.4)" }}
+            >
+              <Sparkles size={44} style={{ color: "white" }} />
             </div>
-            <h1 className="text-3xl font-bold mb-3" style={{ color: "var(--text-primary)" }}>Welcome to ClearDeskAI</h1>
-            <p className="text-lg mb-8" style={{ color: "var(--text-secondary)" }}>Your files, organized by AI — 100% private, 100% local.</p>
-            <p className="mb-8 text-sm" style={{ color: "var(--text-secondary)" }}>ClearDeskAI uses a local AI model to intelligently sort your files. Nothing leaves your computer — ever.</p>
-            <button onClick={checkOllama} className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl font-semibold text-white transition-all hover:scale-105" style={{ background: "var(--accent)" }}>
+            <h1 className="text-4xl font-extrabold mb-3" style={{ color: "var(--text-primary)" }}>Welcome to ClearDeskAI</h1>
+            <p className="text-lg mb-4" style={{ color: "var(--text-secondary)" }}>Your files, organized by AI — 100% private, 100% local.</p>
+            <p className="mb-10 text-sm max-w-sm mx-auto" style={{ color: "var(--text-secondary)" }}>ClearDeskAI uses a local AI model to intelligently sort your files. Nothing leaves your computer — ever.</p>
+            <button onClick={checkOllama} className="flex items-center gap-2 mx-auto px-8 py-3.5 rounded-xl font-semibold text-white btn-press" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))", boxShadow: "0 4px 16px rgba(108, 92, 231, 0.3)" }}>
               Get Started <ArrowRight size={18} />
             </button>
           </div>
         )}
 
         {step === "check_ollama" && (
-          <div className="text-center">
+          <div className="text-center animate-fade-in">
             {ollamaStatus === "checking" && (
               <>
-                <Loader2 size={48} className="animate-spin mx-auto mb-6" style={{ color: "var(--accent)" }} />
+                <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ background: "var(--bg-tertiary)" }}>
+                  <Loader2 size={36} className="animate-spin" style={{ color: "var(--accent)" }} />
+                </div>
                 <h2 className="text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>Checking AI Engine...</h2>
                 <p style={{ color: "var(--text-secondary)" }}>Looking for Ollama on your system.</p>
               </>
             )}
             {ollamaStatus === "not_installed" && (
               <>
-                <XCircle size={48} className="mx-auto mb-6" style={{ color: "var(--danger)" }} />
+                <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ background: "rgba(255, 107, 107, 0.1)" }}>
+                  <XCircle size={36} style={{ color: "var(--danger)" }} />
+                </div>
                 <h2 className="text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>Ollama Not Found</h2>
                 <p className="mb-6" style={{ color: "var(--text-secondary)" }}>ClearDeskAI needs Ollama to run AI locally. Install it first, then come back.</p>
                 <div className="rounded-xl p-4 mb-6 text-left" style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
@@ -141,41 +150,58 @@ export function OnboardingView({ onComplete }: OnboardingProps) {
                     </>
                   )}
                 </div>
-                <button onClick={checkOllama} className="px-6 py-3 rounded-xl font-semibold text-white" style={{ background: "var(--accent)" }}>Check Again</button>
+                <button onClick={checkOllama} className="px-6 py-3 rounded-xl font-semibold text-white btn-press" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))", boxShadow: "0 4px 16px rgba(108, 92, 231, 0.3)" }}>Check Again</button>
               </>
             )}
           </div>
         )}
 
         {step === "download_model" && (
-          <div className="text-center">
-            <Download size={48} className="mx-auto mb-6" style={{ color: "var(--warning)" }} />
+          <div className="text-center animate-fade-in">
+            <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ background: "rgba(255, 169, 77, 0.1)" }}>
+              <Download size={36} style={{ color: "var(--warning)" }} />
+            </div>
             <h2 className="text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>Download AI Model</h2>
-            <p className="mb-6" style={{ color: "var(--text-secondary)" }}>Ollama is installed but the AI model (Qwen3 4B, ~2.5GB) needs to be downloaded. This is a one-time setup.</p>
-            {downloadError && <div className="rounded-lg p-3 mb-4 text-sm" style={{ background: "var(--danger)", color: "white" }}>{downloadError}</div>}
-            <button onClick={downloadModel} disabled={downloading} className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl font-semibold text-white" style={{ background: downloading ? "var(--text-secondary)" : "var(--success)" }}>
+            <p className="mb-6 text-sm max-w-sm mx-auto" style={{ color: "var(--text-secondary)" }}>Ollama is installed but the AI model (Qwen3 4B, ~2.5GB) needs to be downloaded. This is a one-time setup.</p>
+            {downloading && (
+              <div className="w-full h-2 rounded-full overflow-hidden mb-4" style={{ background: "var(--bg-tertiary)" }}>
+                <div className="h-full rounded-full progress-shimmer" style={{ width: "60%" }} />
+              </div>
+            )}
+            {downloadError && <div className="rounded-xl p-3 mb-4 text-sm" style={{ background: "rgba(255, 107, 107, 0.1)", color: "var(--danger)", border: "1px solid rgba(255, 107, 107, 0.2)" }}>{downloadError}</div>}
+            <button onClick={downloadModel} disabled={downloading} className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl font-semibold text-white btn-press" style={{ background: downloading ? "var(--text-secondary)" : "linear-gradient(135deg, var(--success), #00b894)", boxShadow: downloading ? "none" : "0 4px 16px rgba(0, 210, 160, 0.3)" }}>
               {downloading ? (<><Loader2 size={18} className="animate-spin" /> Downloading...</>) : (<><Download size={18} /> Download Model</>)}
             </button>
           </div>
         )}
 
         {step === "select_folder" && (
-          <div className="text-center">
-            <CheckCircle size={48} className="mx-auto mb-6" style={{ color: "var(--success)" }} />
+          <div className="text-center animate-fade-in">
+            <div
+              className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-bounce-in"
+              style={{ background: "linear-gradient(135deg, var(--success), #00b894)", boxShadow: "0 8px 32px rgba(0, 210, 160, 0.3)" }}
+            >
+              <CheckCircle size={36} style={{ color: "white" }} />
+            </div>
             <h2 className="text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>AI Engine Ready!</h2>
             <p className="mb-8" style={{ color: "var(--text-secondary)" }}>You're all set. ClearDeskAI is ready to organize your files.</p>
-            <button onClick={() => setStep("ready")} className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl font-semibold text-white transition-all hover:scale-105" style={{ background: "var(--accent)" }}>
+            <button onClick={() => setStep("ready")} className="flex items-center gap-2 mx-auto px-8 py-3.5 rounded-xl font-semibold text-white btn-press" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))", boxShadow: "0 4px 16px rgba(108, 92, 231, 0.3)" }}>
               Let's Go <ArrowRight size={18} />
             </button>
           </div>
         )}
 
         {step === "ready" && (
-          <div className="text-center">
-            <Sparkles size={48} className="mx-auto mb-6" style={{ color: "var(--accent)" }} />
+          <div className="text-center animate-fade-in">
+            <div
+              className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-8 animate-bounce-in"
+              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))", boxShadow: "0 8px 32px rgba(108, 92, 231, 0.4)" }}
+            >
+              <Sparkles size={44} style={{ color: "white" }} />
+            </div>
             <h2 className="text-2xl font-bold mb-4" style={{ color: "var(--text-primary)" }}>You're Ready!</h2>
             <p className="mb-8" style={{ color: "var(--text-secondary)" }}>Head to Scan & Organize to sort your first folder.</p>
-            <button onClick={onComplete} className="flex items-center gap-2 mx-auto px-8 py-3 rounded-xl font-semibold text-white transition-all hover:scale-105" style={{ background: "var(--accent)" }}>
+            <button onClick={onComplete} className="flex items-center gap-2 mx-auto px-8 py-3.5 rounded-xl font-semibold text-white btn-press" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-hover))", boxShadow: "0 4px 16px rgba(108, 92, 231, 0.3)" }}>
               <FolderOpen size={18} /> Start Organizing
             </button>
           </div>
