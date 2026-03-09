@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown, Clock, RotateCcw, ArrowUpDown } from "lucide-react";
+import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown, Clock, RotateCcw, ArrowUpDown, Zap, Sparkles } from "lucide-react";
 
 type SortKey = "name" | "confidence" | "size" | "category";
 import { invoke } from "@tauri-apps/api/core";
@@ -69,6 +69,7 @@ export function ScanView() {
   const [pullingModel, setPullingModel] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [scanPhase, setScanPhase] = useState<string>("");
+  const [scanStats, setScanStats] = useState<{ ruleClassified: number; aiClassified: number }>({ ruleClassified: 0, aiClassified: 0 });
   const [searchFilter, setSearchFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -185,15 +186,22 @@ export function ScanView() {
     setScanPhase("Scanning files...");
 
     // Listen for progress events from backend
-    const unlisten = await listen<{ phase: string; processed: number; total: number }>(
+    const unlisten = await listen<{ phase: string; processed: number; total: number; ruleClassified: number; aiClassified: number }>(
       "scan-progress",
       (event) => {
-        const { phase, processed, total } = event.payload;
+        const { phase, processed, total, ruleClassified, aiClassified } = event.payload;
         setScanProgress(processed, total);
+        setScanStats({ ruleClassified, aiClassified });
         if (phase === "collecting") {
-          setScanPhase(`Found ${total} files, starting AI classification...`);
+          setScanPhase(`Found ${total} files...`);
+        } else if (phase === "rules_done") {
+          if (ruleClassified === total) {
+            setScanPhase(`All ${total} files classified by rules — no AI needed!`);
+          } else {
+            setScanPhase(`${ruleClassified} files classified instantly, ${total - ruleClassified} need AI...`);
+          }
         } else if (phase === "classifying") {
-          setScanPhase(`Classifying... ${processed}/${total} files`);
+          setScanPhase(`AI classifying... ${processed}/${total} files`);
         }
       }
     );
@@ -217,9 +225,17 @@ export function ScanView() {
       setScanResults(classified);
       finishScan();
       const rejected = classified.filter((c) => !c.approved).length;
-      const msg = rejected > 0
-        ? `Found ${result.classifications.length} files (${rejected} auto-rejected below ${Math.round(threshold * 100)}%)`
-        : `Found ${result.classifications.length} files to organize`;
+      const ruleCount = scanStats.ruleClassified;
+      const aiCount = scanStats.aiClassified;
+      let msg = `${result.classifications.length} files classified`;
+      if (ruleCount > 0 && aiCount === 0) {
+        msg += ` instantly by rules — no AI needed!`;
+      } else if (ruleCount > 0) {
+        msg += ` (${ruleCount} by rules, ${aiCount} by AI)`;
+      }
+      if (rejected > 0) {
+        msg += ` · ${rejected} auto-rejected`;
+      }
       toast("success", msg);
     } catch (err) {
       finishScan();
@@ -518,7 +534,18 @@ export function ScanView() {
           </div>
           {scan.totalFiles > 0 && (
             <div className="flex justify-between mt-2 text-xs" style={{ color: "var(--text-secondary)" }}>
-              <span>{scan.scannedFiles === 0 ? "Collecting files..." : "AI classifying..."}</span>
+              <span>
+                {scanStats.ruleClassified > 0 && (
+                  <span style={{ color: "var(--success)" }}>{scanStats.ruleClassified} by rules</span>
+                )}
+                {scanStats.ruleClassified > 0 && scanStats.aiClassified > 0 && " · "}
+                {scanStats.aiClassified > 0 && (
+                  <span style={{ color: "var(--accent)" }}>{scanStats.aiClassified} by AI</span>
+                )}
+                {scanStats.ruleClassified === 0 && scanStats.aiClassified === 0 && (
+                  <span>{scan.scannedFiles === 0 ? "Collecting files..." : "Classifying..."}</span>
+                )}
+              </span>
               <span>{scan.scannedFiles}/{scan.totalFiles}</span>
             </div>
           )}
@@ -819,6 +846,10 @@ export function ScanView() {
                       </div>
                       <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
                         {r.file.size >= 1048576 ? `${(r.file.size / 1048576).toFixed(1)} MB` : `${(r.file.size / 1024).toFixed(0)} KB`}
+                      </span>
+                      <span className="flex items-center gap-1 text-xs" style={{ color: r.reasoning.includes("rule") || r.reasoning.includes("extension") || r.reasoning.includes("MIME") || r.reasoning.includes("pattern") ? "var(--success)" : "var(--accent)" }}>
+                        {r.reasoning.includes("rule") || r.reasoning.includes("extension") || r.reasoning.includes("MIME") || r.reasoning.includes("pattern") ? <Zap size={10} /> : <Sparkles size={10} />}
+                        {r.reasoning.includes("rule") || r.reasoning.includes("extension") || r.reasoning.includes("MIME") || r.reasoning.includes("pattern") ? "Rule" : "AI"}
                       </span>
                     </div>
                     <p className="text-xs mt-1.5 mb-3" style={{ color: "var(--text-secondary)" }}>

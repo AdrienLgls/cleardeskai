@@ -2,6 +2,7 @@ mod commands;
 mod models;
 mod db;
 mod ai;
+mod rules;
 mod fs_utils;
 
 use tauri::{
