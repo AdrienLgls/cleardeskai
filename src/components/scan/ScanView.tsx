@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot } from "lucide-react";
+import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, AlertTriangle, Download, Bot, Search } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -29,6 +29,8 @@ export function ScanView() {
   const [pullingModel, setPullingModel] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [scanPhase, setScanPhase] = useState<string>("");
+  const [searchFilter, setSearchFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
@@ -330,22 +332,51 @@ export function ScanView() {
                     <div key={cat} style={{ width: `${(count / total) * 100}%`, background: catColors[cat] || "#B2BEC3" }} />
                   ))}
                 </div>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2">
                   {Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
-                    <div key={cat} className="flex items-center gap-1.5 text-xs">
+                    <button
+                      key={cat}
+                      onClick={() => setCategoryFilter(categoryFilter === cat ? null : cat)}
+                      className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg transition-all"
+                      style={{
+                        background: categoryFilter === cat ? (catColors[cat] || "#B2BEC3") + "22" : "transparent",
+                        border: categoryFilter === cat ? `1px solid ${catColors[cat] || "#B2BEC3"}` : "1px solid transparent",
+                      }}
+                    >
                       <div className="w-2 h-2 rounded-full" style={{ background: catColors[cat] || "#B2BEC3" }} />
-                      <span style={{ color: "var(--text-secondary)" }}>{cat}</span>
+                      <span style={{ color: categoryFilter === cat ? "var(--text-primary)" : "var(--text-secondary)" }}>{cat}</span>
                       <span className="font-medium" style={{ color: "var(--text-primary)" }}>{count}</span>
-                    </div>
+                    </button>
                   ))}
+                  {categoryFilter && (
+                    <button
+                      onClick={() => setCategoryFilter(null)}
+                      className="text-xs px-2 py-1 rounded-lg"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      Clear filter
+                    </button>
+                  )}
                 </div>
               </div>
             );
           })()}
 
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
-              Proposed Changes ({approvedCount}/{scan.results.length} approved)
+          {/* Search + Actions */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="relative flex-1">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-secondary)" }} />
+              <input
+                type="text"
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                placeholder="Filter files..."
+                className="w-full pl-8 pr-3 py-2 rounded-lg text-sm border outline-none"
+                style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+              />
+            </div>
+            <h2 className="text-sm font-medium whitespace-nowrap" style={{ color: "var(--text-secondary)" }}>
+              {approvedCount}/{scan.results.length} approved
             </h2>
             <div className="flex gap-2">
               <button
@@ -366,7 +397,14 @@ export function ScanView() {
           </div>
 
           <div className="space-y-2 mb-6 stagger-in">
-            {scan.results.map((r, i) => (
+            {scan.results.map((r, i) => ({ r, i })).filter(({ r }) => {
+              if (categoryFilter && r.category !== categoryFilter) return false;
+              if (searchFilter) {
+                const q = searchFilter.toLowerCase();
+                return r.file.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q) || r.proposedFolder.toLowerCase().includes(q);
+              }
+              return true;
+            }).map(({ r, i }) => (
               <div
                 key={i}
                 className="rounded-lg border transition-colors overflow-hidden"
