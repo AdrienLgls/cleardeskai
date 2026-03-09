@@ -1,45 +1,10 @@
 use crate::models::{FileChange, ApplyResult};
 use crate::db;
+use crate::fs_utils::{move_file, resolve_conflict};
 use uuid::Uuid;
 use chrono::Utc;
 use std::fs;
 use std::path::Path;
-
-/// Move a file, falling back to copy+delete if rename fails (cross-filesystem)
-fn move_file(source: &Path, dest: &Path) -> Result<(), String> {
-    match fs::rename(source, dest) {
-        Ok(()) => Ok(()),
-        Err(_) => {
-            // Fallback: copy then delete original
-            fs::copy(source, dest)
-                .map_err(|e| format!("Failed to copy {}: {}", source.display(), e))?;
-            fs::remove_file(source)
-                .map_err(|e| format!("Copied but failed to remove original {}: {}", source.display(), e))?;
-            Ok(())
-        }
-    }
-}
-
-/// Generate a unique destination path if a conflict exists
-fn resolve_conflict(dest: &Path) -> std::path::PathBuf {
-    if !dest.exists() {
-        return dest.to_path_buf();
-    }
-
-    let stem = dest.file_stem().unwrap_or_default().to_string_lossy().to_string();
-    let ext = dest.extension().map(|e| format!(".{}", e.to_string_lossy())).unwrap_or_default();
-    let parent = dest.parent().unwrap_or(Path::new("."));
-
-    for i in 1..100 {
-        let candidate = parent.join(format!("{} ({}){}", stem, i, ext));
-        if !candidate.exists() {
-            return candidate;
-        }
-    }
-
-    // Extremely unlikely fallback
-    parent.join(format!("{}-{}{}", stem, Uuid::new_v4(), ext))
-}
 
 #[tauri::command]
 pub async fn apply_changes(changes: Vec<FileChange>) -> Result<ApplyResult, String> {

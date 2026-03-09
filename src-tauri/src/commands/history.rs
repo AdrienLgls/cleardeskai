@@ -1,5 +1,6 @@
 use crate::models::{Operation, FileChange};
 use crate::db;
+use crate::fs_utils::move_file;
 use std::fs;
 use std::path::Path;
 
@@ -42,13 +43,11 @@ pub async fn undo_operation(operation_id: String) -> Result<(), String> {
         let source_path = Path::new(source);
 
         if dest_path.exists() {
-            // Ensure source parent dir exists
             if let Some(parent) = source_path.parent() {
                 fs::create_dir_all(parent)
                     .map_err(|e| format!("Failed to create dir for undo: {}", e))?;
             }
-            fs::rename(dest_path, source_path)
-                .map_err(|e| format!("Failed to undo move: {}", e))?;
+            move_file(dest_path, source_path)?;
         }
     }
 
