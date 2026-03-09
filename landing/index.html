@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClearDeskAI — AI-Powered File Organizer</title>
+  <meta name="description" content="Organize your files with local AI. 100% private, 100% local. No cloud, no subscriptions.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwindcss.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: { primary: '#0f0f13', secondary: '#1a1a24', tertiary: '#242435' },
+            accent: { DEFAULT: '#6c5ce7', hover: '#7c6ef7', light: 'rgba(108,92,231,0.1)' },
+            success: '#00d2a0',
+            warning: '#ffa94d',
+            txt: { primary: '#f0f0f5', secondary: '#9595b0' },
+            border: '#2a2a3d',
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-text {
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .glow-card {
+      transition: all 0.3s ease;
+    }
+    .glow-card:hover {
+      box-shadow: 0 0 0 1px #6c5ce7, 0 0 32px rgba(108,92,231,0.15);
+      transform: translateY(-4px);
+    }
+    .hero-glow {
+      background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(108,92,231,0.15) 0%, transparent 70%);
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .float { animation: float 4s ease-in-out infinite; }
+  </style>
+</head>
+<body class="bg-bg-primary text-txt-primary antialiased">
+
+  <!-- Nav -->
+  <nav class="fixed top-0 w-full z-50 border-b border-border/50 backdrop-blur-xl bg-bg-primary/80">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <svg class="w-7 h-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5H18l-3.6 2.6 1.4 4.4L12 12l-3.8 2.5 1.4-4.4L6 7.5h4.5z"/></svg>
+        <span class="text-lg font-bold">ClearDeskAI</span>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm text-txt-secondary">
+        <a href="#features" class="hover:text-txt-primary transition-colors">Features</a>
+        <a href="#pricing" class="hover:text-txt-primary transition-colors">Pricing</a>
+        <a href="#faq" class="hover:text-txt-primary transition-colors">FAQ</a>
+        <a href="https://github.com/AdrienLgls/cleardeskai" class="hover:text-txt-primary transition-colors">GitHub</a>
+      </div>
+      <a href="#pricing" class="px-4 py-2 bg-accent hover:bg-accent-hover rounded-lg text-sm font-semibold text-white transition-colors">
+        Download Free
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="relative pt-32 pb-20 hero-glow">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border text-xs text-txt-secondary mb-6">
+        <span class="w-2 h-2 bg-success rounded-full"></span>
+        100% local AI — your files never leave your computer
+      </div>
+      <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mb-6">
+        Your messy files,<br><span class="gradient-text">organized by AI.</span>
+      </h1>
+      <p class="text-lg text-txt-secondary max-w-2xl mx-auto mb-10">
+        ClearDeskAI scans your folders, classifies files with local AI, and proposes a clean structure — all before moving a single file. Privacy-first. No cloud. No subscription.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+        <a href="#pricing" class="px-8 py-3.5 bg-accent hover:bg-accent-hover rounded-xl text-white font-semibold transition-all hover:scale-105 shadow-lg shadow-accent/20">
+          Download for Free
+        </a>
+        <a href="https://github.com/AdrienLgls/cleardeskai" class="px-8 py-3.5 rounded-xl border border-border text-txt-secondary hover:text-txt-primary hover:border-accent transition-all font-semibold">
+          View on GitHub →
+        </a>
+      </div>
+      <!-- App Preview Placeholder -->
+      <div class="relative max-w-3xl mx-auto float">
+        <div class="rounded-2xl border border-border bg-bg-secondary p-1 shadow-2xl">
+          <div class="rounded-xl bg-bg-primary p-8 min-h-[300px] flex items-center justify-center">
+            <div class="text-center">
+              <svg class="w-16 h-16 text-accent/30 mx-auto mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+              <p class="text-txt-secondary text-sm">App screenshot coming soon</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="py-20">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold mb-4">Everything you need to tame file chaos</h2>
+        <p class="text-txt-secondary max-w-xl mx-auto">Smart enough to organize thousands of files. Careful enough to never move one without your approval.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="glow-card rounded-2xl border border-border bg-bg-secondary p-6">
+          <div class="w-10 h-10 rounded-lg bg-accent-light flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Smart Scan</h3>
+          <p class="text-sm text-txt-secondary">AI analyzes filenames, metadata, and content to classify files into logical categories.</p>
+        </div>
+        <div class="glow-card rounded-2xl border border-border bg-bg-secondary p-6">
+          <div class="w-10 h-10 rounded-lg bg-accent-light flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Preview & Approve</h3>
+          <p class="text-sm text-txt-secondary">See every proposed move before it happens. Approve, reject, or edit individually.</p>
+        </div>
+        <div class="glow-card rounded-2xl border border-border bg-bg-secondary p-6">
+          <div class="w-10 h-10 rounded-lg bg-accent-light flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">One-Click Undo</h3>
+          <p class="text-sm text-txt-secondary">Every operation is fully reversible. Complete history with restore-to-any-point.</p>
+        </div>
+        <div class="glow-card rounded-2xl border border-border bg-bg-secondary p-6">
+          <div class="w-10 h-10 rounded-lg bg-accent-light flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Watch Mode</h3>
+          <p class="text-sm text-txt-secondary">Monitor folders continuously. New files get classified and organized automatically.</p>
+        </div>
+        <div class="glow-card rounded-2xl border border-border bg-bg-secondary p-6">
+          <div class="w-10 h-10 rounded-lg bg-accent-light flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">100% Private</h3>
+          <p class="text-sm text-txt-secondary">AI runs entirely on your machine via Ollama. No cloud, no data sent anywhere, ever.</p>
+        </div>
+        <div class="glow-card rounded-2xl border border-border bg-bg-secondary p-6">
+          <div class="w-10 h-10 rounded-lg bg-accent-light flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Smart Rename</h3>
+          <p class="text-sm text-txt-secondary">AI suggests descriptive filenames based on content. No more IMG_20260308.jpg.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="py-20">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold mb-4">Simple, fair pricing</h2>
+        <p class="text-txt-secondary">Pay once, use forever. No subscriptions.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Free -->
+        <div class="rounded-2xl border border-border bg-bg-secondary p-8">
+          <h3 class="font-semibold text-lg mb-1">Free</h3>
+          <div class="text-3xl font-bold mb-1">$0</div>
+          <p class="text-sm text-txt-secondary mb-6">Try it out</p>
+          <ul class="space-y-3 text-sm text-txt-secondary mb-8">
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-success flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>1 folder per scan</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-success flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>50 files max</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-success flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Local AI</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-success flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Full undo history</li>
+          </ul>
+          <a href="#" class="block text-center px-6 py-3 rounded-xl border border-border text-txt-secondary hover:text-txt-primary hover:border-accent transition-all font-semibold">
+            Download Free
+          </a>
+        </div>
+        <!-- Pro -->
+        <div class="rounded-2xl border-2 border-accent bg-bg-secondary p-8 relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-accent rounded-full text-xs font-semibold text-white">Most Popular</div>
+          <h3 class="font-semibold text-lg mb-1">Pro</h3>
+          <div class="text-3xl font-bold mb-1">$49</div>
+          <p class="text-sm text-txt-secondary mb-6">One-time payment</p>
+          <ul class="space-y-3 text-sm text-txt-secondary mb-8">
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-success flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Unlimited folders</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-success flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Unlimited files</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-success flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Watch mode</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-success flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Smart rename</li>
+          </ul>
+          <a href="#" class="block text-center px-6 py-3 rounded-xl bg-accent hover:bg-accent-hover text-white font-semibold transition-all hover:scale-105 shadow-lg shadow-accent/20">
+            Buy Pro — $49
+          </a>
+        </div>
+        <!-- Premium -->
+        <div class="rounded-2xl border border-border bg-bg-secondary p-8">
+          <h3 class="font-semibold text-lg mb-1">Premium</h3>
+          <div class="text-3xl font-bold mb-1">$79</div>
+          <p class="text-sm text-txt-secondary mb-6">One-time payment</p>
+          <ul class="space-y-3 text-sm text-txt-secondary mb-8">
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-success flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Everything in Pro</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-success flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>BYOK cloud AI (GPT-4o, Claude)</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-success flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Priority updates</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-success flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Future premium features</li>
+          </ul>
+          <a href="#" class="block text-center px-6 py-3 rounded-xl border border-border text-txt-secondary hover:text-txt-primary hover:border-accent transition-all font-semibold">
+            Buy Premium — $79
+          </a>
+        </div>
+      </div>
+      <p class="text-center text-sm text-txt-secondary mt-8">14-day money-back guarantee. No questions asked.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="py-20">
+    <div class="max-w-3xl mx-auto px-6">
+      <h2 class="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+      <div class="space-y-4">
+        <details class="rounded-xl border border-border bg-bg-secondary p-5 group">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold">
+            Is my data really private?
+            <svg class="w-5 h-5 text-txt-secondary group-open:rotate-180 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </summary>
+          <p class="mt-3 text-sm text-txt-secondary">Yes. ClearDeskAI uses Ollama to run AI models entirely on your machine. Your files are never uploaded, sent to a server, or processed in the cloud. Everything happens locally.</p>
+        </details>
+        <details class="rounded-xl border border-border bg-bg-secondary p-5 group">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold">
+            What are the system requirements?
+            <svg class="w-5 h-5 text-txt-secondary group-open:rotate-180 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </summary>
+          <p class="mt-3 text-sm text-txt-secondary">8GB RAM minimum (for the AI model). Works on Windows 10+, macOS 12+, and Linux. About 3GB of disk space for the app and AI model.</p>
+        </details>
+        <details class="rounded-xl border border-border bg-bg-secondary p-5 group">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold">
+            Will it move my files without asking?
+            <svg class="w-5 h-5 text-txt-secondary group-open:rotate-180 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </summary>
+          <p class="mt-3 text-sm text-txt-secondary">Never. Every change is previewed first. You approve each move individually or in bulk. And every operation can be undone with one click.</p>
+        </details>
+        <details class="rounded-xl border border-border bg-bg-secondary p-5 group">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold">
+            Why one-time payment instead of subscription?
+            <svg class="w-5 h-5 text-txt-secondary group-open:rotate-180 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </summary>
+          <p class="mt-3 text-sm text-txt-secondary">Because the AI runs on your machine, there's no ongoing server cost for us. You pay once, you own it forever. Major version upgrades are available at a discounted price.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-20">
+    <div class="max-w-3xl mx-auto px-6 text-center">
+      <div class="rounded-2xl border border-border bg-bg-secondary p-12">
+        <h2 class="text-3xl font-bold mb-4">Ready to clear your desk?</h2>
+        <p class="text-txt-secondary mb-8">Download ClearDeskAI for free and organize your first folder in under 2 minutes.</p>
+        <a href="#pricing" class="inline-flex px-8 py-3.5 bg-accent hover:bg-accent-hover rounded-xl text-white font-semibold transition-all hover:scale-105 shadow-lg shadow-accent/20">
+          Download Free
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-border py-8">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2 text-sm text-txt-secondary">
+        <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5H18l-3.6 2.6 1.4 4.4L12 12l-3.8 2.5 1.4-4.4L6 7.5h4.5z"/></svg>
+        ClearDeskAI © 2026
+      </div>
+      <div class="flex items-center gap-6 text-sm text-txt-secondary">
+        <a href="https://github.com/AdrienLgls/cleardeskai" class="hover:text-txt-primary transition-colors">GitHub</a>
+        <a href="mailto:contact@cleardeskai.com" class="hover:text-txt-primary transition-colors">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
