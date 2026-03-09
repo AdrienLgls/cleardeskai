@@ -6,7 +6,7 @@ use std::time::Duration;
 
 const OLLAMA_URL: &str = "http://localhost:11434";
 const DEFAULT_MODEL: &str = "qwen3:4b";
-const REQUEST_TIMEOUT: Duration = Duration::from_secs(120);
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(180);
 
 /// Get the user-configured model or fall back to default
 pub fn get_model() -> String {
@@ -134,7 +134,8 @@ async fn classify_batch(client: &Client, files: &[FileInfo], base_folder: &str) 
     }).collect();
 
     let prompt = format!(
-        r#"You are a file organization AI. Classify these files into a logical folder structure.
+        r#"/no_think
+You are a file organization AI. Classify these files into a logical folder structure.
 
 Base folder: {base_folder}
 

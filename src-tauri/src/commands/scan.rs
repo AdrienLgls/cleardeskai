@@ -48,7 +48,7 @@ async fn classify_with_progress(
     files: &[FileInfo],
     base_folder: &str,
 ) -> Result<Vec<Classification>, String> {
-    let batch_size = 20;
+    let batch_size = 8;
     let total = files.len();
     let mut all = Vec::new();
     let mut processed = 0;
