@@ -6,10 +6,7 @@ use context::{DetectedProject, file_in_project, get_project_destination};
 
 /// Try to extract a 4-digit year (2000-2099) from a filename or modified date.
 fn extract_year(name: &str, modified: &str) -> Option<String> {
-    // Try filename first (e.g., "IMG_20250315_123456.jpg" or "photo-2025-03-15.png")
-    let re_candidates: Vec<&str> = name.matches(|c: char| c.is_ascii_digit()).collect();
-    let _ = re_candidates; // suppress unused
-    // Simple scan: find first 4-digit sequence that looks like a year
+    // Scan filename for first 4-digit sequence that looks like a year
     let bytes = name.as_bytes();
     for i in 0..bytes.len().saturating_sub(3) {
         if bytes[i].is_ascii_digit()
@@ -623,5 +620,65 @@ mod tests {
         assert_eq!(c.category, "Projects");
         assert!(c.proposed_folder.contains("dev/my-app/src"));
         assert!(c.reasoning.contains("Node.js"));
+    }
+
+    #[test]
+    fn test_extract_year_from_filename() {
+        assert_eq!(extract_year("img_20250315_123456.jpg", ""), Some("2025".to_string()));
+        assert_eq!(extract_year("photo-2023-vacation.png", ""), Some("2023".to_string()));
+        assert_eq!(extract_year("random-file.txt", ""), None);
+        // Numbers outside year range should not match
+        assert_eq!(extract_year("file_1234_test.jpg", ""), None);
+    }
+
+    #[test]
+    fn test_extract_year_from_modified_date() {
+        assert_eq!(extract_year("photo.jpg", "2026-03-10T12:00:00Z"), Some("2026".to_string()));
+    }
+
+    #[test]
+    fn test_extract_course_code() {
+        assert_eq!(extract_course_code("devoir-INF349-tp2.pdf"), Some("INF349".to_string()));
+        assert_eq!(extract_course_code("MAT101_exam.docx"), Some("MAT101".to_string()));
+        assert_eq!(extract_course_code("random-file.txt"), None);
+    }
+
+    #[test]
+    fn test_image_gets_year_subfolder() {
+        let mut file = make_file("IMG_20250601_sunset.jpg", "jpg");
+        file.name = "IMG_20250601_sunset.jpg".to_string();
+        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None, false);
+        assert!(result.is_some());
+        let c = result.unwrap();
+        assert_eq!(c.category, "Images");
+        assert!(c.proposed_folder.contains("Images/2025"), "Expected year subfolder, got: {}", c.proposed_folder);
+    }
+
+    #[test]
+    fn test_school_file_gets_course_code() {
+        let file = FileInfo {
+            path: "/test/devoir-INF349-tp2.pdf".to_string(),
+            name: "devoir-INF349-tp2.pdf".to_string(),
+            extension: "pdf".to_string(),
+            size: 1024,
+            modified: "2024-01-01T00:00:00Z".to_string(),
+            mime_type: "application/pdf".to_string(),
+            content_preview: None,
+        };
+        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None, false);
+        assert!(result.is_some());
+        let c = result.unwrap();
+        assert_eq!(c.category, "Documents");
+        assert!(c.proposed_folder.contains("School/INF349"), "Expected course code subfolder, got: {}", c.proposed_folder);
+    }
+
+    #[test]
+    fn test_invoice_semantic_detection() {
+        let file = make_file("facture-amazon-2026.pdf", "pdf");
+        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None, false);
+        assert!(result.is_some());
+        let c = result.unwrap();
+        assert_eq!(c.category, "Documents");
+        assert!(c.proposed_folder.contains("Invoices"), "Expected Invoices subfolder, got: {}", c.proposed_folder);
     }
 }

@@ -63,10 +63,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           return (
             <div
               key={t.id}
-              className={`relative overflow-hidden rounded-xl border pointer-events-auto ${t.exiting ? "animate-toast-out" : "animate-toast-in"}`}
-              style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", boxShadow: `0 8px 24px rgba(0,0,0,0.4), inset 3px 0 0 ${color}` }}
+              className={`relative overflow-hidden rounded-xl border pointer-events-auto glass-card ${t.exiting ? "animate-toast-out" : "animate-toast-in"}`}
+              style={{ borderColor: "var(--border)", boxShadow: `0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.15), inset 3px 0 0 ${color}` }}
             >
-              <div className="flex items-center gap-3 px-4 py-3">
+              <div className="flex items-center gap-3 px-5 py-3.5">
                 <Icon size={18} style={{ color, flexShrink: 0 }} />
                 <span className="text-sm flex-1" style={{ color: "var(--text-primary)" }}>{t.message}</span>
                 <button onClick={() => removeToast(t.id)} className="flex-shrink-0 transition-colors" style={{ color: "var(--text-secondary)" }}>
