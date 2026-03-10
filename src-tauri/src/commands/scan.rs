@@ -49,7 +49,7 @@ pub async fn scan_folder(app: AppHandle, path: String) -> Result<ScanResult, Str
     })
 }
 
-/// Hybrid classification: rules first (instant), AI only for ambiguous files.
+/// Hybrid classification: context detection → rules → AI for ambiguous files.
 async fn classify_hybrid(
     app: &AppHandle,
     files: &[FileInfo],
@@ -59,9 +59,13 @@ async fn classify_hybrid(
     let mut all_classifications: Vec<(usize, Classification)> = Vec::with_capacity(total);
     let mut needs_ai: Vec<(usize, FileInfo)> = Vec::new();
 
-    // Phase 1: Rule-based classification (instant)
+    // Phase 0: Detect project directories from file paths
+    let file_paths: Vec<String> = files.iter().map(|f| f.path.clone()).collect();
+    let projects = rules::context::detect_projects(&file_paths);
+
+    // Phase 1: Rule-based classification with project context (instant)
     for (idx, file) in files.iter().enumerate() {
-        if let Some(classification) = rules::classify_by_rules(file, base_folder) {
+        if let Some(classification) = rules::classify_by_rules(file, base_folder, &projects) {
             all_classifications.push((idx, classification));
         } else {
             needs_ai.push((idx, file.clone()));

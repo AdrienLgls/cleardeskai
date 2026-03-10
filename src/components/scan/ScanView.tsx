@@ -14,7 +14,7 @@ const categoryColors: Record<string, string> = {
   Music: "#FDCB6E", Code: "#0984E3", Archives: "#636E72",
   PDFs: "#D63031", Invoices: "#00CEC9", Screenshots: "#A29BFE",
   Spreadsheets: "#55EFC4", Presentations: "#E84393", Fonts: "#74B9FF",
-  Databases: "#81ECEC", Design: "#FAB1A0", Other: "#B2BEC3",
+  Databases: "#81ECEC", Design: "#FAB1A0", Projects: "#FD79A8", Other: "#B2BEC3",
 };
 
 function getCategoryColor(category: string): string {

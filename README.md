@@ -99,6 +99,7 @@ cleardeskai/
 │   ├── src/
 │   │   ├── commands/       # Tauri IPC commands
 │   │   ├── models/         # Data types
+│   │   ├── rules/          # Rule-based classification + project detection
 │   │   ├── db/             # SQLite operations
 │   │   └── ai/             # Ollama integration
 │   └── tauri.conf.json     # Tauri config
@@ -109,10 +110,11 @@ cleardeskai/
 ## How It Works
 
 1. **Scan** — ClearDeskAI walks through your selected folder, collecting file metadata and content previews
-2. **Classify** — Files are sent to the local AI model (Ollama) for intelligent categorization
-3. **Preview** — You see every proposed move/rename with confidence scores before anything happens
-4. **Organize** — Approved changes are executed. A full snapshot is saved for undo
-5. **Watch** — Optionally monitor folders for new files and auto-organize them
+2. **Detect** — Smart context detection identifies dev projects (package.json, Cargo.toml, etc.) and groups them
+3. **Classify** — ~95% of files are classified instantly by rules (extension, name patterns, MIME type). Only truly ambiguous files are sent to local AI
+4. **Preview** — You see every proposed move/rename with confidence scores before anything happens
+5. **Organize** — Approved changes are executed. Dev projects move to `~/dev/`, documents stay organized by type. Full undo support
+6. **Watch** — Optionally monitor folders for new files and auto-organize them
 
 ## Pricing
 
@@ -152,6 +154,9 @@ cleardeskai/
 - [x] Window state persistence (size/position remembered)
 - [x] Keyboard navigation in scan results (arrows/j/k, space, enter)
 - [x] CI/CD pipeline (GitHub Actions — build + release)
+- [x] Rule-based instant classification (~95% of files, no AI needed)
+- [x] Auto-install Ollama from within the app
+- [x] Smart project detection (dev projects → ~/dev/)
 - [ ] Near-duplicate detection
 - [ ] Semantic search
 - [ ] Custom organization rules/templates
