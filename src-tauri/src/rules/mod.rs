@@ -4,6 +4,66 @@ use crate::models::{FileInfo, Classification};
 use std::collections::HashMap;
 use context::{DetectedProject, file_in_project, get_project_destination};
 
+/// Try to extract a 4-digit year (2000-2099) from a filename or modified date.
+fn extract_year(name: &str, modified: &str) -> Option<String> {
+    // Try filename first (e.g., "IMG_20250315_123456.jpg" or "photo-2025-03-15.png")
+    let re_candidates: Vec<&str> = name.matches(|c: char| c.is_ascii_digit()).collect();
+    let _ = re_candidates; // suppress unused
+    // Simple scan: find first 4-digit sequence that looks like a year
+    let bytes = name.as_bytes();
+    for i in 0..bytes.len().saturating_sub(3) {
+        if bytes[i].is_ascii_digit()
+            && bytes[i + 1].is_ascii_digit()
+            && bytes[i + 2].is_ascii_digit()
+            && bytes[i + 3].is_ascii_digit()
+        {
+            let year_str = &name[i..i + 4];
+            if let Ok(y) = year_str.parse::<u32>() {
+                if (2000..=2099).contains(&y) {
+                    return Some(year_str.to_string());
+                }
+            }
+        }
+    }
+    // Fallback: extract year from modified date (ISO format "2025-03-10T...")
+    if modified.len() >= 4 {
+        let year_str = &modified[..4];
+        if let Ok(y) = year_str.parse::<u32>() {
+            if (2000..=2099).contains(&y) {
+                return Some(year_str.to_string());
+            }
+        }
+    }
+    None
+}
+
+/// Try to extract a course code like INF349, MAT101, etc. from a filename.
+fn extract_course_code(name: &str) -> Option<String> {
+    let upper = name.to_uppercase();
+    let bytes = upper.as_bytes();
+    for i in 0..bytes.len().saturating_sub(5) {
+        // Look for 2-4 letters followed by 3-4 digits
+        let start = i;
+        let mut j = i;
+        while j < bytes.len() && bytes[j].is_ascii_uppercase() && j - start < 5 {
+            j += 1;
+        }
+        let letter_count = j - start;
+        if letter_count < 2 || letter_count > 4 {
+            continue;
+        }
+        let digit_start = j;
+        while j < bytes.len() && bytes[j].is_ascii_digit() && j - digit_start < 5 {
+            j += 1;
+        }
+        let digit_count = j - digit_start;
+        if digit_count >= 3 && digit_count <= 4 {
+            return Some(upper[start..j].to_string());
+        }
+    }
+    None
+}
+
 /// Rule-based file classification — covers ~95% of files instantly without AI.
 /// Returns Some(Classification) if a rule matched, None if AI is needed.
 /// Now accepts detected projects for context-aware classification.
@@ -24,38 +84,74 @@ pub fn classify_by_rules(
 
     // 1. Semantic name analysis (runs FIRST — detects CV, boarding pass, devoir, etc.)
     if let Some((category, subcategory, reasoning)) = classify_by_semantic_name(&name_lower) {
-        let folder = if best_practice {
-            best_practice_folder(category, Some(subcategory))
+        // For School docs, try to extract course code for subfolder
+        let enriched_sub = if subcategory == "School" {
+            match extract_course_code(&file.name) {
+                Some(code) => format!("School/{}", code),
+                None => subcategory.to_string(),
+            }
         } else {
-            format!("{}/{}/{}", base_folder, category, subcategory)
+            subcategory.to_string()
         };
+
+        let folder = if best_practice {
+            best_practice_folder(category, Some(&enriched_sub))
+        } else {
+            format!("{}/{}/{}", base_folder, category, enriched_sub)
+        };
+
+        let final_reasoning = if enriched_sub != subcategory {
+            format!("{} (course code detected)", reasoning)
+        } else {
+            reasoning.to_string()
+        };
+
         return Some(Classification {
             file: file.clone(),
             proposed_folder: folder,
             proposed_name: None,
             confidence: 0.93,
             category: category.to_string(),
-            reasoning: reasoning.to_string(),
+            reasoning: final_reasoning,
         });
     }
 
     // 2. Extension-based classification (covers most remaining files)
     if let Some((category, subcategory)) = classify_by_extension(&ext) {
-        let folder = if best_practice {
-            best_practice_folder(category, subcategory)
+        // Add year subfolder for media files (Images, Videos, Music)
+        let year_sub = if matches!(category, "Images" | "Videos" | "Music") {
+            extract_year(&name_lower, &file.modified)
         } else {
-            match subcategory {
-                Some(sub) => format!("{}/{}/{}", base_folder, category, sub),
-                None => format!("{}/{}", base_folder, category),
+            None
+        };
+
+        let folder = if best_practice {
+            let base = best_practice_folder(category, subcategory);
+            match &year_sub {
+                Some(y) => format!("{}/{}", base, y),
+                None => base,
+            }
+        } else {
+            match (subcategory, &year_sub) {
+                (Some(sub), Some(y)) => format!("{}/{}/{}/{}", base_folder, category, sub, y),
+                (Some(sub), None) => format!("{}/{}/{}", base_folder, category, sub),
+                (None, Some(y)) => format!("{}/{}/{}", base_folder, category, y),
+                (None, None) => format!("{}/{}", base_folder, category),
             }
         };
+
+        let reasoning = match &year_sub {
+            Some(y) => format!("Classified by extension (.{}) — sorted into {} subfolder", ext, y),
+            None => format!("Classified by file extension (.{})", ext),
+        };
+
         return Some(Classification {
             file: file.clone(),
             proposed_folder: folder,
             proposed_name: None,
             confidence: 0.95,
             category: category.to_string(),
-            reasoning: format!("Classified by file extension (.{})", ext),
+            reasoning,
         });
     }
 
