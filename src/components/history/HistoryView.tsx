@@ -64,9 +64,9 @@ export function HistoryView() {
   }
 
   return (
-    <div className="p-8 max-w-full">
+    <div className="p-8 max-w-full page-bg">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+        <h1 className="text-2xl font-bold gradient-text">
           History
         </h1>
         {history.length > 0 && (

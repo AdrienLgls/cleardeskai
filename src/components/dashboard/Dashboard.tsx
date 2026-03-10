@@ -29,9 +29,9 @@ export function Dashboard({ onNavigate }: DashboardProps) {
   }, [setOllamaStatus]);
 
   return (
-    <div className="p-8 max-w-full">
+    <div className="p-8 max-w-full page-bg">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+        <h1 className="text-2xl font-bold mb-2 gradient-text">
           Welcome to ClearDeskAI
         </h1>
         <p style={{ color: "var(--text-secondary)" }}>
@@ -244,7 +244,7 @@ function AnimatedNumber({ value }: { value: string }) {
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div
-      className="rounded-xl border hover-lift"
+      className="rounded-xl border hover-lift glass-card"
       style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", padding: "1.5rem" }}
     >
       <div className="flex items-center gap-2" style={{ color: "var(--accent)", marginBottom: "0.75rem" }}>

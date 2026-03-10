@@ -162,8 +162,8 @@ export function SettingsView() {
   const keyChanged = apiKey !== savedKey;
 
   return (
-    <div className="p-8 max-w-full">
-      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--text-primary)" }}>
+    <div className="p-8 max-w-full page-bg">
+      <h1 className="text-2xl font-bold mb-6 gradient-text">
         Settings
       </h1>
 

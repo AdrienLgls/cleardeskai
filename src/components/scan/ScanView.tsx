@@ -365,8 +365,8 @@ export function ScanView() {
   const formatSize = (bytes: number) => bytes >= 1073741824 ? `${(bytes / 1073741824).toFixed(1)} GB` : bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${(bytes / 1024).toFixed(0)} KB`;
 
   return (
-    <div className="p-8 max-w-full">
-      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--text-primary)" }}>
+    <div className="p-8 max-w-full page-bg">
+      <h1 className="text-2xl font-bold mb-6 gradient-text">
         Scan & Organize
       </h1>
 
