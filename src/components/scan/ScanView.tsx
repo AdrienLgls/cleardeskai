@@ -875,49 +875,60 @@ export function ScanView() {
                   borderLeft: `3px solid ${getCategoryColor(r.category)}`,
                 }}
               >
-                <div className="flex items-center gap-3 px-4 py-3">
-                  <button onClick={() => toggleApproval(i)}>
-                    {r.approved ? (
-                      <Check size={18} style={{ color: "var(--success)" }} />
-                    ) : (
-                      <X size={18} style={{ color: "var(--danger)" }} />
-                    )}
-                  </button>
-                  <span className="flex items-center gap-1.5 text-sm font-mono truncate flex-1" style={{ color: "var(--text-secondary)" }}>
-                    <span className="flex-shrink-0" style={{ color: r.category === "Projects" ? "#FD79A8" : "var(--text-secondary)", opacity: 0.6 }}>{getFileIcon(r.file.extension, r.category)}</span>
-                    <span className="truncate">{r.file.name}</span>
-                  </span>
-                  <ArrowRight size={14} style={{ color: "var(--text-secondary)" }} />
-                  <span className="text-sm font-mono truncate flex-1" style={{ color: "var(--text-primary)" }}>
-                    {r.proposedFolder}/{r.proposedName || r.file.name}
-                  </span>
-                  <span
-                    className="text-xs px-2.5 py-1 rounded-full flex-shrink-0"
-                    style={{ background: getCategoryColor(r.category) + "22", color: getCategoryColor(r.category), border: `1px solid ${getCategoryColor(r.category)}44` }}
-                  >
-                    {r.category}
-                  </span>
-                  <span
-                    className="text-xs px-2.5 py-1 rounded-full"
-                    style={{
-                      background: r.confidence > 0.8 ? "var(--success)" : r.confidence > 0.5 ? "var(--warning)" : "var(--danger)",
-                      color: "white",
-                      opacity: 0.9,
-                    }}
-                  >
-                    {Math.round(r.confidence * 100)}%
-                  </span>
-                  <button
-                    onClick={() => setExpanded(expanded === i ? null : i)}
-                    className="transition-transform"
-                    style={{ color: "var(--text-secondary)", transform: expanded === i ? "rotate(180deg)" : "rotate(0)" }}
-                  >
-                    <ChevronDown size={14} />
-                  </button>
+                <div className="px-5 py-4">
+                  <div className="flex items-start gap-3">
+                    <button onClick={() => toggleApproval(i)} className="mt-0.5 flex-shrink-0">
+                      {r.approved ? (
+                        <Check size={18} style={{ color: "var(--success)" }} />
+                      ) : (
+                        <X size={18} style={{ color: "var(--danger)" }} />
+                      )}
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      {/* File name + badges row */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="flex-shrink-0" style={{ color: r.category === "Projects" ? "#FD79A8" : getCategoryColor(r.category), opacity: 0.7 }}>{getFileIcon(r.file.extension, r.category)}</span>
+                        <span className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>{r.file.name}</span>
+                        <span
+                          className="text-xs px-2.5 py-0.5 rounded-full flex-shrink-0 font-medium"
+                          style={{ background: getCategoryColor(r.category) + "18", color: getCategoryColor(r.category) }}
+                        >
+                          {r.category}
+                        </span>
+                        <span
+                          className="text-xs px-2 py-0.5 rounded-full flex-shrink-0 font-medium"
+                          style={{
+                            background: r.confidence > 0.8 ? "var(--success)" : r.confidence > 0.5 ? "var(--warning)" : "var(--danger)",
+                            color: "white",
+                            opacity: 0.85,
+                          }}
+                        >
+                          {Math.round(r.confidence * 100)}%
+                        </span>
+                      </div>
+                      {/* Source → Destination */}
+                      <div className="flex items-center gap-2 text-xs font-mono">
+                        <span className="truncate" style={{ color: "var(--text-secondary)", opacity: 0.6, maxWidth: "40%" }}>
+                          {r.file.path.replace(/\\/g, "/").split("/").slice(-2, -1)[0]}/
+                        </span>
+                        <ArrowRight size={12} className="flex-shrink-0" style={{ color: "var(--accent)" }} />
+                        <span className="truncate font-medium" style={{ color: "var(--accent)" }}>
+                          {r.proposedFolder.replace(/\\/g, "/").split("/").slice(-2).join("/")}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setExpanded(expanded === i ? null : i)}
+                      className="transition-transform flex-shrink-0 mt-0.5"
+                      style={{ color: "var(--text-secondary)", transform: expanded === i ? "rotate(180deg)" : "rotate(0)" }}
+                    >
+                      <ChevronDown size={14} />
+                    </button>
+                  </div>
                 </div>
                 {expanded === i && (
-                  <div className="px-4 pb-3 pt-0 border-t" style={{ borderColor: "var(--border)" }}>
-                    <div className="flex items-center gap-4 mt-2">
+                  <div className="px-5 pb-4 pt-0 border-t" style={{ borderColor: "var(--border)" }}>
+                    <div className="flex items-center gap-4 mt-3">
                       <div className="flex items-center gap-1.5">
                         <Tag size={12} style={{ color: getCategoryColor(r.category) }} />
                         <span className="text-xs font-medium" style={{ color: getCategoryColor(r.category) }}>{r.category}</span>
@@ -963,7 +974,7 @@ export function ScanView() {
                           type="text"
                           value={r.proposedFolder}
                           onChange={(e) => updateResult(i, { proposedFolder: e.target.value })}
-                          className="flex-1 px-2 py-1 rounded text-xs font-mono border outline-none input-focus"
+                          className="flex-1 px-3 py-2 rounded-lg text-xs font-mono border outline-none input-focus"
                           style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
                           placeholder="Destination folder"
                         />
@@ -971,7 +982,7 @@ export function ScanView() {
                           type="text"
                           value={r.proposedName || r.file.name}
                           onChange={(e) => updateResult(i, { proposedName: e.target.value === r.file.name ? undefined : e.target.value })}
-                          className="flex-1 px-2 py-1 rounded text-xs font-mono border outline-none input-focus"
+                          className="flex-1 px-3 py-2 rounded-lg text-xs font-mono border outline-none input-focus"
                           style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
                           placeholder="Filename"
                         />
