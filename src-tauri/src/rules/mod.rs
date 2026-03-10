@@ -12,6 +12,7 @@ pub fn classify_by_rules(
     base_folder: &str,
     projects: &HashMap<String, DetectedProject>,
     dev_folder: Option<&str>,
+    best_practice: bool,
 ) -> Option<Classification> {
     // 0. Context-aware: check if file belongs to a detected project
     if let Some(classification) = classify_by_project(file, projects, dev_folder) {
@@ -23,9 +24,13 @@ pub fn classify_by_rules(
 
     // 1. Extension-based classification (covers most files)
     if let Some((category, subcategory)) = classify_by_extension(&ext) {
-        let folder = match subcategory {
-            Some(sub) => format!("{}/{}/{}", base_folder, category, sub),
-            None => format!("{}/{}", base_folder, category),
+        let folder = if best_practice {
+            best_practice_folder(category, subcategory)
+        } else {
+            match subcategory {
+                Some(sub) => format!("{}/{}/{}", base_folder, category, sub),
+                None => format!("{}/{}", base_folder, category),
+            }
         };
         return Some(Classification {
             file: file.clone(),
@@ -39,7 +44,11 @@ pub fn classify_by_rules(
 
     // 2. Name pattern matching (screenshots, invoices, etc.)
     if let Some((category, reasoning)) = classify_by_name_pattern(&name_lower) {
-        let folder = format!("{}/{}", base_folder, category);
+        let folder = if best_practice {
+            best_practice_folder(category, None)
+        } else {
+            format!("{}/{}", base_folder, category)
+        };
         return Some(Classification {
             file: file.clone(),
             proposed_folder: folder,
@@ -52,7 +61,11 @@ pub fn classify_by_rules(
 
     // 3. MIME type fallback for files with unusual extensions
     if let Some(category) = classify_by_mime(&file.mime_type) {
-        let folder = format!("{}/{}", base_folder, category);
+        let folder = if best_practice {
+            best_practice_folder(category, None)
+        } else {
+            format!("{}/{}", base_folder, category)
+        };
         return Some(Classification {
             file: file.clone(),
             proposed_folder: folder,
@@ -93,6 +106,37 @@ fn classify_by_project(
             project.project_type, project.name, project.name
         ),
     })
+}
+
+/// Map category to best-practice XDG-style paths (~/Images, ~/Documents, etc.)
+fn best_practice_folder(category: &str, subcategory: Option<&str>) -> String {
+    let home = std::env::var("HOME")
+        .or_else(|_| std::env::var("USERPROFILE"))
+        .unwrap_or_else(|_| "/home/user".to_string());
+
+    let base = match category {
+        "Images" => format!("{}/Images", home),
+        "Videos" => format!("{}/Videos", home),
+        "Music" => format!("{}/Music", home),
+        "Documents" => format!("{}/Documents", home),
+        "PDFs" => format!("{}/Documents/PDFs", home),
+        "Spreadsheets" => format!("{}/Documents/Spreadsheets", home),
+        "Presentations" => format!("{}/Documents/Presentations", home),
+        "Screenshots" => format!("{}/Images/Screenshots", home),
+        "Invoices" => format!("{}/Documents/Invoices", home),
+        "Downloads" => format!("{}/Downloads", home),
+        "Archives" => format!("{}/Archives", home),
+        "Code" => format!("{}/dev", home),
+        "Fonts" => format!("{}/Fonts", home),
+        "Design" => format!("{}/Design", home),
+        "Databases" => format!("{}/Databases", home),
+        _ => format!("{}/Other", home),
+    };
+
+    match subcategory {
+        Some(sub) => format!("{}/{}", base, sub),
+        None => base,
+    }
 }
 
 fn classify_by_extension(ext: &str) -> Option<(&'static str, Option<&'static str>)> {
@@ -287,7 +331,7 @@ mod tests {
     #[test]
     fn test_image_classification() {
         let file = make_file("photo.jpg", "jpg");
-        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None);
+        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None, false);
         assert!(result.is_some());
         assert_eq!(result.unwrap().category, "Images");
     }
@@ -295,7 +339,7 @@ mod tests {
     #[test]
     fn test_code_classification() {
         let file = make_file("main.rs", "rs");
-        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None);
+        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None, false);
         assert!(result.is_some());
         assert_eq!(result.unwrap().category, "Code");
     }
@@ -303,7 +347,7 @@ mod tests {
     #[test]
     fn test_screenshot_pattern() {
         let file = make_file("Screenshot_2024-01-15.png", "png");
-        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None);
+        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None, false);
         assert!(result.is_some());
         // Extension matches Images first — that's fine
         let cat = result.unwrap().category;
@@ -313,14 +357,14 @@ mod tests {
     #[test]
     fn test_unknown_extension() {
         let file = make_file("mystery.xyz123", "xyz123");
-        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None);
+        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None, false);
         assert!(result.is_none());
     }
 
     #[test]
     fn test_ts_is_ambiguous() {
         let file = make_file("data.ts", "ts");
-        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None);
+        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None, false);
         assert!(result.is_none());
     }
 
@@ -342,7 +386,7 @@ mod tests {
             content_preview: None,
         };
 
-        let result = classify_by_rules(&file, "/home/user/docs", &projects, None);
+        let result = classify_by_rules(&file, "/home/user/docs", &projects, None, false);
         assert!(result.is_some());
         let c = result.unwrap();
         assert_eq!(c.category, "Projects");

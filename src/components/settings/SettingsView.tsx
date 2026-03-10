@@ -30,6 +30,7 @@ export function SettingsView() {
   const [confidenceThreshold, setConfidenceThreshold] = useState("0");
   const [savedScanExcludes, setSavedScanExcludes] = useState("");
   const [devFolder, setDevFolder] = useState("~/dev");
+  const [bestPracticePaths, setBestPracticePaths] = useState(false);
 
   useEffect(() => {
     // Load API key
@@ -61,6 +62,9 @@ export function SettingsView() {
     }).catch(() => {});
     invoke<string | null>("load_setting", { key: "dev_folder" }).then((val) => {
       if (val) setDevFolder(val);
+    }).catch(() => {});
+    invoke<string | null>("load_setting", { key: "best_practice_paths" }).then((val) => {
+      if (val === "true") setBestPracticePaths(true);
     }).catch(() => {});
 
     // Check Ollama status and load models
@@ -397,6 +401,29 @@ export function SettingsView() {
             <p className="text-xs mt-1.5" style={{ color: "var(--text-secondary)", opacity: 0.7 }}>
               Detected dev projects will be proposed for move to this folder.
             </p>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm block" style={{ color: "var(--text-secondary)" }}>
+                  Best-Practice Paths Mode
+                </label>
+                <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)", opacity: 0.7 }}>
+                  Use ~/Images, ~/Documents, ~/Music instead of organizing within the scanned folder.
+                </p>
+              </div>
+              <div
+                className="toggle-switch"
+                data-checked={bestPracticePaths}
+                onClick={async () => {
+                  const next = !bestPracticePaths;
+                  setBestPracticePaths(next);
+                  await invoke("save_setting", { key: "best_practice_paths", value: String(next) }).catch(() => {});
+                  toast("success", next ? "Best-practice paths enabled" : "Organize in-place mode");
+                }}
+              />
+            </div>
           </div>
 
           <div>
