@@ -11,9 +11,10 @@ pub fn classify_by_rules(
     file: &FileInfo,
     base_folder: &str,
     projects: &HashMap<String, DetectedProject>,
+    dev_folder: Option<&str>,
 ) -> Option<Classification> {
     // 0. Context-aware: check if file belongs to a detected project
-    if let Some(classification) = classify_by_project(file, projects) {
+    if let Some(classification) = classify_by_project(file, projects, dev_folder) {
         return Some(classification);
     }
 
@@ -71,9 +72,10 @@ pub fn classify_by_rules(
 fn classify_by_project(
     file: &FileInfo,
     projects: &HashMap<String, DetectedProject>,
+    dev_folder: Option<&str>,
 ) -> Option<Classification> {
     let (project, relative_dir) = file_in_project(&file.path, projects)?;
-    let dest = get_project_destination(project);
+    let dest = get_project_destination(project, dev_folder);
     let proposed_folder = if relative_dir.is_empty() {
         dest.to_string_lossy().to_string()
     } else {
@@ -285,7 +287,7 @@ mod tests {
     #[test]
     fn test_image_classification() {
         let file = make_file("photo.jpg", "jpg");
-        let result = classify_by_rules(&file, "/home/user", &empty_projects());
+        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None);
         assert!(result.is_some());
         assert_eq!(result.unwrap().category, "Images");
     }
@@ -293,7 +295,7 @@ mod tests {
     #[test]
     fn test_code_classification() {
         let file = make_file("main.rs", "rs");
-        let result = classify_by_rules(&file, "/home/user", &empty_projects());
+        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None);
         assert!(result.is_some());
         assert_eq!(result.unwrap().category, "Code");
     }
@@ -301,7 +303,7 @@ mod tests {
     #[test]
     fn test_screenshot_pattern() {
         let file = make_file("Screenshot_2024-01-15.png", "png");
-        let result = classify_by_rules(&file, "/home/user", &empty_projects());
+        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None);
         assert!(result.is_some());
         // Extension matches Images first — that's fine
         let cat = result.unwrap().category;
@@ -311,14 +313,14 @@ mod tests {
     #[test]
     fn test_unknown_extension() {
         let file = make_file("mystery.xyz123", "xyz123");
-        let result = classify_by_rules(&file, "/home/user", &empty_projects());
+        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None);
         assert!(result.is_none());
     }
 
     #[test]
     fn test_ts_is_ambiguous() {
         let file = make_file("data.ts", "ts");
-        let result = classify_by_rules(&file, "/home/user", &empty_projects());
+        let result = classify_by_rules(&file, "/home/user", &empty_projects(), None);
         assert!(result.is_none());
     }
 
@@ -340,7 +342,7 @@ mod tests {
             content_preview: None,
         };
 
-        let result = classify_by_rules(&file, "/home/user/docs", &projects);
+        let result = classify_by_rules(&file, "/home/user/docs", &projects, None);
         assert!(result.is_some());
         let c = result.unwrap();
         assert_eq!(c.category, "Projects");

@@ -63,9 +63,13 @@ async fn classify_hybrid(
     let file_paths: Vec<String> = files.iter().map(|f| f.path.clone()).collect();
     let projects = rules::context::detect_projects(&file_paths);
 
+    // Load custom dev folder setting
+    let dev_folder = db::get_setting("dev_folder").ok().flatten();
+    let dev_folder_ref = dev_folder.as_deref();
+
     // Phase 1: Rule-based classification with project context (instant)
     for (idx, file) in files.iter().enumerate() {
-        if let Some(classification) = rules::classify_by_rules(file, base_folder, &projects) {
+        if let Some(classification) = rules::classify_by_rules(file, base_folder, &projects, dev_folder_ref) {
             all_classifications.push((idx, classification));
         } else {
             needs_ai.push((idx, file.clone()));

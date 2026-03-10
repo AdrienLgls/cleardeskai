@@ -29,6 +29,7 @@ export function SettingsView() {
   const [scanMinSize, setScanMinSize] = useState("1");
   const [confidenceThreshold, setConfidenceThreshold] = useState("0");
   const [savedScanExcludes, setSavedScanExcludes] = useState("");
+  const [devFolder, setDevFolder] = useState("~/dev");
 
   useEffect(() => {
     // Load API key
@@ -57,6 +58,9 @@ export function SettingsView() {
     }).catch(() => {});
     invoke<string | null>("load_setting", { key: "confidence_threshold" }).then((val) => {
       if (val) setConfidenceThreshold(val);
+    }).catch(() => {});
+    invoke<string | null>("load_setting", { key: "dev_folder" }).then((val) => {
+      if (val) setDevFolder(val);
     }).catch(() => {});
 
     // Check Ollama status and load models
@@ -371,6 +375,27 @@ export function SettingsView() {
             </select>
             <p className="text-xs mt-1.5" style={{ color: "var(--text-secondary)", opacity: 0.7 }}>
               Files below this confidence will be auto-rejected in scan results.
+            </p>
+          </div>
+
+          <div>
+            <label className="text-sm mb-1.5 block" style={{ color: "var(--text-secondary)" }}>
+              Dev Projects Folder
+            </label>
+            <input
+              type="text"
+              value={devFolder}
+              onChange={async (e) => {
+                setDevFolder(e.target.value);
+                await invoke("save_setting", { key: "dev_folder", value: e.target.value }).catch(() => {});
+              }}
+              onBlur={() => toast("success", `Dev folder set to ${devFolder}`)}
+              placeholder="~/dev"
+              className="px-4 py-2.5 rounded-lg text-sm border outline-none input-focus w-full"
+              style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
+            />
+            <p className="text-xs mt-1.5" style={{ color: "var(--text-secondary)", opacity: 0.7 }}>
+              Detected dev projects will be proposed for move to this folder.
             </p>
           </div>
 

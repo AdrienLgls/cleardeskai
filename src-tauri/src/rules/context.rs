@@ -99,13 +99,25 @@ pub fn detect_projects(file_paths: &[String]) -> HashMap<String, DetectedProject
 }
 
 /// Get the best-practice destination for a project.
-/// Returns ~/dev/project-name as the target directory.
-pub fn get_project_destination(project: &DetectedProject) -> PathBuf {
+/// Uses custom dev_folder if provided, otherwise defaults to ~/dev/.
+pub fn get_project_destination(project: &DetectedProject, dev_folder: Option<&str>) -> PathBuf {
     let home = std::env::var("HOME")
         .or_else(|_| std::env::var("USERPROFILE"))
         .unwrap_or_else(|_| "/home/user".to_string());
 
-    Path::new(&home).join("dev").join(&project.name)
+    let base = match dev_folder {
+        Some(folder) if !folder.is_empty() => {
+            // Expand ~ to home directory
+            if folder.starts_with("~/") {
+                PathBuf::from(folder.replacen("~", &home, 1))
+            } else {
+                PathBuf::from(folder)
+            }
+        }
+        _ => Path::new(&home).join("dev"),
+    };
+
+    base.join(&project.name)
 }
 
 /// Check if a file belongs to a detected project and return the project + relative path.

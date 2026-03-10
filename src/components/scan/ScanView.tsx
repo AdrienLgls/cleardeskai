@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { FolderOpen, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown, Clock, RotateCcw, ArrowUpDown, Zap, Sparkles } from "lucide-react";
+import { FolderOpen, FolderGit2, Play, Check, X, ChevronRight, Loader2, ArrowRight, ChevronDown, Tag, Pencil, Download, Bot, Search, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, FileArchive, FileText, File, FileDown, Clock, RotateCcw, ArrowUpDown, Zap, Sparkles } from "lucide-react";
 
 type SortKey = "name" | "confidence" | "size" | "category";
 import { invoke } from "@tauri-apps/api/core";
@@ -38,9 +38,16 @@ const fileIconMap: Record<string, typeof File> = {
   zip: FileArchive, tar: FileArchive, gz: FileArchive, rar: FileArchive, "7z": FileArchive, bz2: FileArchive,
 };
 
-function getFileIcon(extension: string) {
+function getFileIcon(extension: string, category?: string) {
+  if (category === "Projects") return <FolderGit2 size={14} />;
   const Icon = fileIconMap[extension.toLowerCase()] || File;
   return <Icon size={14} />;
+}
+
+/** Extract project type from reasoning string like "Part of Node.js project 'my-app'..." */
+function extractProjectType(reasoning: string): string | null {
+  const match = reasoning.match(/Part of (\S+) project/);
+  return match ? match[1] : null;
 }
 
 export function ScanView() {
@@ -764,6 +771,37 @@ export function ScanView() {
             );
           })()}
 
+          {/* Projects detected banner */}
+          {(() => {
+            const projectFiles = scan.results.filter(r => r.category === "Projects");
+            if (projectFiles.length === 0) return null;
+            const projectNames = new Map<string, string>();
+            for (const r of projectFiles) {
+              const match = r.reasoning.match(/Part of (\S+) project '([^']+)'/);
+              if (match) projectNames.set(match[2], match[1]);
+            }
+            return (
+              <div className="rounded-xl p-3 border mb-4 animate-fade-in flex items-center gap-3" style={{ background: "#FD79A80A", borderColor: "#FD79A833" }}>
+                <FolderGit2 size={18} style={{ color: "#FD79A8" }} />
+                <div className="flex-1">
+                  <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                    {projectNames.size} project{projectNames.size > 1 ? "s" : ""} detected
+                  </span>
+                  <span className="text-xs ml-2" style={{ color: "var(--text-secondary)" }}>
+                    ({projectFiles.length} files → ~/dev/)
+                  </span>
+                </div>
+                <div className="flex gap-1.5 flex-wrap">
+                  {Array.from(projectNames.entries()).map(([name, type]) => (
+                    <span key={name} className="text-xs px-2 py-0.5 rounded-full" style={{ background: "#FD79A822", color: "#FD79A8", border: "1px solid #FD79A844" }}>
+                      {name} <span style={{ opacity: 0.7 }}>({type})</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Search + Actions */}
           <div className="flex items-center gap-3 mb-4">
             <div className="relative flex-1">
@@ -846,7 +884,7 @@ export function ScanView() {
                     )}
                   </button>
                   <span className="flex items-center gap-1.5 text-sm font-mono truncate flex-1" style={{ color: "var(--text-secondary)" }}>
-                    <span className="flex-shrink-0" style={{ color: "var(--text-secondary)", opacity: 0.6 }}>{getFileIcon(r.file.extension)}</span>
+                    <span className="flex-shrink-0" style={{ color: r.category === "Projects" ? "#FD79A8" : "var(--text-secondary)", opacity: 0.6 }}>{getFileIcon(r.file.extension, r.category)}</span>
                     <span className="truncate">{r.file.name}</span>
                   </span>
                   <ArrowRight size={14} style={{ color: "var(--text-secondary)" }} />
@@ -883,6 +921,11 @@ export function ScanView() {
                       <div className="flex items-center gap-1.5">
                         <Tag size={12} style={{ color: getCategoryColor(r.category) }} />
                         <span className="text-xs font-medium" style={{ color: getCategoryColor(r.category) }}>{r.category}</span>
+                        {r.category === "Projects" && extractProjectType(r.reasoning) && (
+                          <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: "#FD79A822", color: "#FD79A8", border: "1px solid #FD79A844" }}>
+                            {extractProjectType(r.reasoning)}
+                          </span>
+                        )}
                       </div>
                       <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
                         {r.file.size >= 1048576 ? `${(r.file.size / 1048576).toFixed(1)} MB` : `${(r.file.size / 1024).toFixed(0)} KB`}
