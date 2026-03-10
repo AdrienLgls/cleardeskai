@@ -803,24 +803,24 @@ export function ScanView() {
           })()}
 
           {/* Search + Actions */}
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-5">
             <div className="relative flex-1">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-secondary)" }} />
+              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: "var(--text-secondary)" }} />
               <input
                 type="text"
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
                 placeholder="Filter files..."
-                className="w-full pl-8 pr-3 py-2 rounded-lg text-sm border outline-none input-focus"
+                className="w-full pl-10 pr-4 py-3 rounded-xl text-sm border outline-none input-focus"
                 style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
               />
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <ArrowUpDown size={12} style={{ color: "var(--text-secondary)" }} />
               <select
                 value={sortKey}
                 onChange={(e) => setSortKey(e.target.value as SortKey)}
-                className="text-xs py-1.5 px-2 rounded-lg border outline-none input-focus cursor-pointer"
+                className="text-xs py-2.5 px-3 rounded-xl border outline-none input-focus cursor-pointer"
                 style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
               >
                 <option value="confidence">Confidence</option>
@@ -835,21 +835,21 @@ export function ScanView() {
             <div className="flex gap-2">
               <button
                 onClick={approveAll}
-                className="px-4 py-2 rounded-lg text-xs font-medium btn-press"
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold btn-press"
                 style={{ background: "var(--success)", color: "white" }}
               >
                 Approve All
               </button>
               <button
                 onClick={rejectAll}
-                className="px-4 py-2 rounded-lg text-xs font-medium btn-press"
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold btn-press"
                 style={{ background: "var(--danger)", color: "white" }}
               >
                 Reject All
               </button>
               <button
                 onClick={exportCSV}
-                className="px-4 py-2 rounded-lg text-xs font-medium btn-press"
+                className="px-3 py-2.5 rounded-xl text-xs font-medium btn-press"
                 style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
                 title="Export results as CSV"
               >
@@ -858,14 +858,14 @@ export function ScanView() {
             </div>
           </div>
 
-          <div className="space-y-2 mb-6 stagger-in">
+          <div className="space-y-3 mb-6 stagger-in">
             {visibleIndices.map((i, vi) => {
               const r = scan.results[i];
               const isFocused = focusedIndex === vi;
               return (
               <div
                 key={i}
-                className="rounded-lg border transition-all duration-200 overflow-hidden"
+                className="rounded-xl border transition-all duration-200 overflow-hidden"
                 style={{
                   background: r.approved ? "var(--bg-secondary)" : "var(--bg-primary)",
                   borderColor: isFocused ? "var(--accent)" : r.approved ? "var(--border)" : "transparent",

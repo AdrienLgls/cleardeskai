@@ -414,8 +414,7 @@ export function SettingsView() {
                 </p>
               </div>
               <div
-                className="toggle-switch"
-                data-checked={bestPracticePaths}
+                className={`toggle-switch ${bestPracticePaths ? "active" : ""}`}
                 onClick={async () => {
                   const next = !bestPracticePaths;
                   setBestPracticePaths(next);

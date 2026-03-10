@@ -88,12 +88,12 @@ export function WatchPanel() {
           <Eye size={18} style={{ color: "var(--accent)" }} />
           <h2 className="font-semibold" style={{ color: "var(--text-primary)" }}>Watch Mode</h2>
           {running && detectedCount > 0 && (
-            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "var(--accent)", color: "white" }}>
+            <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: "var(--accent)", color: "white" }}>
               {detectedCount} detected
             </span>
           )}
         </div>
-        <button onClick={toggleWatch} disabled={loading || (!running && folders.length === 0)} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium btn-press" style={{ background: running ? "var(--danger)" : "var(--success)", color: "white", opacity: loading || (!running && folders.length === 0) ? 0.5 : 1 }}>
+        <button onClick={toggleWatch} disabled={loading || (!running && folders.length === 0)} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-medium btn-press" style={{ background: running ? "var(--danger)" : "var(--success)", color: "white", opacity: loading || (!running && folders.length === 0) ? 0.5 : 1 }}>
           {loading ? <Loader2 size={12} className="animate-spin" /> : running ? <EyeOff size={12} /> : <Eye size={12} />}
           {running ? "Stop" : "Start"}
         </button>
@@ -103,17 +103,17 @@ export function WatchPanel() {
       </p>
       <div className="space-y-2 mb-4">
         {folders.map((folder, i) => (
-          <div key={i} className="flex items-center justify-between rounded-lg px-3 py-2 transition-colors" style={{ background: "var(--bg-tertiary)" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--border)"} onMouseLeave={(e) => e.currentTarget.style.background = "var(--bg-tertiary)"}>
+          <div key={i} className="flex items-center justify-between rounded-xl px-4 py-3 transition-colors" style={{ background: "var(--bg-tertiary)" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--border)"} onMouseLeave={(e) => e.currentTarget.style.background = "var(--bg-tertiary)"}>
             <span className="text-sm font-mono truncate" style={{ color: "var(--text-primary)" }}>{folder}</span>
-            <button onClick={() => removeFolder(i)} style={{ color: "var(--text-secondary)" }}><Trash2 size={14} /></button>
+            <button onClick={() => removeFolder(i)} className="p-1.5 rounded-lg transition-colors" style={{ color: "var(--text-secondary)" }}><Trash2 size={14} /></button>
           </div>
         ))}
       </div>
       <div className="flex items-center gap-2 mb-4">
-        <button onClick={addFolder} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium btn-press" style={{ background: "var(--bg-tertiary)", color: "var(--text-primary)" }}>
+        <button onClick={addFolder} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium btn-press" style={{ background: "var(--bg-tertiary)", color: "var(--text-primary)" }}>
           <FolderPlus size={14} /> Add Folder
         </button>
-        <select value={interval} onChange={(e) => setIntervalVal(Number(e.target.value))} className="px-3 py-2 rounded-lg text-sm border outline-none input-focus cursor-pointer" style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}>
+        <select value={interval} onChange={(e) => setIntervalVal(Number(e.target.value))} className="px-4 py-2.5 rounded-xl text-sm border outline-none input-focus cursor-pointer" style={{ background: "var(--bg-tertiary)", borderColor: "var(--border)", color: "var(--text-primary)" }}>
           <option value={30}>Every 30s</option>
           <option value={60}>Every 60s</option>
           <option value={300}>Every 5m</option>

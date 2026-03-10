@@ -73,7 +73,7 @@ export function HistoryView() {
           <button
             onClick={() => setShowClearConfirm(true)}
             disabled={clearing}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium btn-press"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-medium btn-press"
             style={{ background: "var(--bg-tertiary)", color: "var(--danger)" }}
           >
             {clearing ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
@@ -181,7 +181,7 @@ export function HistoryView() {
                       <button
                         onClick={() => handleUndo(op.id)}
                         disabled={undoing === op.id}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-colors btn-press"
+                        className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-medium transition-colors btn-press"
                         style={{ background: "var(--bg-tertiary)", color: "var(--warning)" }}
                       >
                         {undoing === op.id ? (
@@ -261,14 +261,14 @@ export function HistoryView() {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowClearConfirm(false)}
-                className="px-4 py-2 rounded-lg text-sm font-medium btn-press"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium btn-press"
                 style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleClearHistory}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium btn-press"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium btn-press"
                 style={{ background: "var(--danger)", color: "white" }}
               >
                 <Trash2 size={14} />
