@@ -22,7 +22,24 @@ pub fn classify_by_rules(
     let ext = file.extension.to_lowercase();
     let name_lower = file.name.to_lowercase();
 
-    // 1. Extension-based classification (covers most files)
+    // 1. Semantic name analysis (runs FIRST — detects CV, boarding pass, devoir, etc.)
+    if let Some((category, subcategory, reasoning)) = classify_by_semantic_name(&name_lower) {
+        let folder = if best_practice {
+            best_practice_folder(category, Some(subcategory))
+        } else {
+            format!("{}/{}/{}", base_folder, category, subcategory)
+        };
+        return Some(Classification {
+            file: file.clone(),
+            proposed_folder: folder,
+            proposed_name: None,
+            confidence: 0.93,
+            category: category.to_string(),
+            reasoning: reasoning.to_string(),
+        });
+    }
+
+    // 2. Extension-based classification (covers most remaining files)
     if let Some((category, subcategory)) = classify_by_extension(&ext) {
         let folder = if best_practice {
             best_practice_folder(category, subcategory)
@@ -42,7 +59,7 @@ pub fn classify_by_rules(
         });
     }
 
-    // 2. Name pattern matching (screenshots, invoices, etc.)
+    // 3. Legacy name pattern matching (screenshots, downloads)
     if let Some((category, reasoning)) = classify_by_name_pattern(&name_lower) {
         let folder = if best_practice {
             best_practice_folder(category, None)
@@ -137,6 +154,124 @@ fn best_practice_folder(category: &str, subcategory: Option<&str>) -> String {
         Some(sub) => format!("{}/{}", base, sub),
         None => base,
     }
+}
+
+/// Smart semantic classification based on filename content.
+/// Returns (category, subcategory, reasoning) for contextual folder placement.
+fn classify_by_semantic_name(name: &str) -> Option<(&'static str, &'static str, &'static str)> {
+    // === CV / Resume ===
+    if name.contains("cv") || name.contains("resume") || name.contains("curriculum") {
+        return Some(("Documents", "CV", "Detected CV/resume by filename"));
+    }
+
+    // === Travel ===
+    if name.contains("boarding") || name.contains("billet")
+        || name.contains("ticket") || name.contains("flight")
+        || name.contains("booking") || name.contains("réservation")
+        || name.contains("reservation") || name.contains("itinerary")
+        || name.contains("itinéraire") || name.contains("eticket")
+        || name.contains("e-ticket")
+    {
+        return Some(("Documents", "Travel", "Detected travel document by filename"));
+    }
+
+    // === Insurance ===
+    if name.contains("assurance") || name.contains("insurance")
+        || name.contains("police") || name.contains("mutuelle")
+        || name.contains("couverture")
+    {
+        return Some(("Documents", "Insurance", "Detected insurance document by filename"));
+    }
+
+    // === School / University ===
+    if name.contains("devoir") || name.contains("assignment")
+        || name.contains("homework") || name.contains("tp-")
+        || name.contains("tp_") || name.starts_with("tp")
+        || name.contains("exam") || name.contains("partiel")
+        || name.contains("cours") || name.contains("lecture")
+        || name.contains("evaluation") || name.contains("évaluation")
+        || name.contains("note") || name.contains("uga")
+        || name.contains("uqac") || name.contains("inf3")
+        || name.contains("inf2") || name.contains("inf1")
+        || name.contains("brmie") || name.contains("semester")
+        || name.contains("semestre")
+    {
+        return Some(("Documents", "School", "Detected school/university document by filename"));
+    }
+
+    // === Administrative ===
+    if name.contains("attestation") || name.contains("certificat")
+        || name.contains("certificate") || name.contains("permis")
+        || name.contains("permit") || name.contains("visa")
+        || name.contains("passport") || name.contains("passeport")
+        || name.contains("carte_identité") || name.contains("id_card")
+        || name.contains("recapitulatif") || name.contains("récapitulatif")
+        || name.contains("déclaration") || name.contains("declaration")
+        || name.contains("code_canada") || name.contains("immigration")
+    {
+        return Some(("Documents", "Admin", "Detected administrative document by filename"));
+    }
+
+    // === Invoices / Receipts (enhanced from old pattern) ===
+    if name.contains("invoice") || name.contains("facture")
+        || name.contains("receipt") || name.contains("reçu")
+        || name.contains("rechnung") || name.contains("quittance")
+        || name.contains("bon_de_commande") || name.contains("order")
+    {
+        return Some(("Documents", "Invoices", "Detected invoice/receipt by filename"));
+    }
+
+    // === Shopping / E-commerce ===
+    if name.contains("commande") || name.contains("purchase")
+        || name.contains("blue-tomato") || name.contains("amazon")
+        || name.contains("paypal") || name.contains("stripe")
+        || name.contains("confirmation") || name.contains("livraison")
+        || name.contains("delivery") || name.contains("tracking")
+    {
+        return Some(("Documents", "Shopping", "Detected shopping/order document by filename"));
+    }
+
+    // === Work / Professional ===
+    if name.contains("contrat") || name.contains("contract")
+        || name.contains("conductix") || name.contains("entreprise")
+        || name.contains("company") || name.contains("salary")
+        || name.contains("salaire") || name.contains("paie")
+        || name.contains("fiche_de_paie") || name.contains("payslip")
+        || name.contains("employment") || name.contains("embauche")
+        || name.contains("lettre_de_motivation") || name.contains("cover_letter")
+    {
+        return Some(("Documents", "Work", "Detected work/professional document by filename"));
+    }
+
+    // === Tax / Finance ===
+    if name.contains("tax") || name.contains("impôt") || name.contains("impot")
+        || name.contains("fiscal") || name.contains("rib")
+        || name.contains("bank") || name.contains("banque")
+        || name.contains("relevé") || name.contains("releve")
+        || name.contains("statement")
+    {
+        return Some(("Documents", "Finance", "Detected financial document by filename"));
+    }
+
+    // === Medical / Health ===
+    if name.contains("médical") || name.contains("medical")
+        || name.contains("ordonnance") || name.contains("prescription")
+        || name.contains("santé") || name.contains("health")
+        || name.contains("vaccin") || name.contains("labo")
+        || name.contains("analyse") || name.contains("radio")
+    {
+        return Some(("Documents", "Medical", "Detected medical document by filename"));
+    }
+
+    // === Screenshots ===
+    if name.starts_with("screenshot") || name.starts_with("capture")
+        || name.starts_with("screen shot") || name.starts_with("écran")
+        || name.contains("screenshot") || name.starts_with("snip_")
+    {
+        return Some(("Images", "Screenshots", "Detected screenshot by filename pattern"));
+    }
+
+    None
 }
 
 fn classify_by_extension(ext: &str) -> Option<(&'static str, Option<&'static str>)> {
