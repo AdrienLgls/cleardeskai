@@ -938,6 +938,24 @@ export function ScanView() {
                     <p className="text-xs mt-1.5 mb-3" style={{ color: "var(--text-secondary)" }}>
                       {r.reasoning}
                     </p>
+                    {r.category === "Projects" && (() => {
+                      const match = r.reasoning.match(/Part of (\S+) project '([^']+)'/);
+                      if (!match) return null;
+                      const projectName = match[2];
+                      const projectType = match[1];
+                      const projectFileCount = scan.results.filter(
+                        (other) => other.category === "Projects" && other.reasoning.includes(`'${projectName}'`)
+                      ).length;
+                      return (
+                        <div className="flex items-center gap-3 mb-3 px-3 py-2 rounded-lg" style={{ background: "#FD79A80A", border: "1px solid #FD79A822" }}>
+                          <FolderGit2 size={16} style={{ color: "#FD79A8" }} />
+                          <div className="text-xs">
+                            <span className="font-medium" style={{ color: "var(--text-primary)" }}>{projectName}</span>
+                            <span style={{ color: "var(--text-secondary)" }}> — {projectType} project, {projectFileCount} files</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
                     <div className="flex items-center gap-2">
                       <Pencil size={12} style={{ color: "var(--text-secondary)" }} />
                       <div className="flex gap-2 flex-1">

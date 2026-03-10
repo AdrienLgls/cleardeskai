@@ -126,7 +126,7 @@ pub fn file_in_project<'a>(
     projects: &'a HashMap<String, DetectedProject>,
 ) -> Option<(&'a DetectedProject, String)> {
     for (root, project) in projects {
-        if file_path.starts_with(&format!("{}/", root)) || file_path.starts_with(root) {
+        if file_path.starts_with(&format!("{}/", root)) {
             // Compute relative path from project root
             let relative = file_path
                 .strip_prefix(root)
@@ -215,5 +215,55 @@ mod tests {
         let projects = HashMap::new();
         let result = file_in_project("/home/user/docs/random.pdf", &projects);
         assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_similar_prefix_no_false_match() {
+        // /home/user/app should NOT match /home/user/app-backup/file.txt
+        let mut projects = HashMap::new();
+        projects.insert("/home/user/app".to_string(), DetectedProject {
+            name: "app".to_string(),
+            project_type: "Node.js",
+        });
+        let result = file_in_project("/home/user/app-backup/file.txt", &projects);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_multiple_project_types() {
+        let files = vec![
+            "/home/user/docs/web-app/package.json".to_string(),
+            "/home/user/docs/rust-tool/Cargo.toml".to_string(),
+            "/home/user/docs/ml-project/pyproject.toml".to_string(),
+        ];
+        let projects = detect_projects(&files);
+        assert_eq!(projects.len(), 3);
+        assert_eq!(projects.get("/home/user/docs/web-app").unwrap().project_type, "Node.js");
+        assert_eq!(projects.get("/home/user/docs/rust-tool").unwrap().project_type, "Rust");
+        assert_eq!(projects.get("/home/user/docs/ml-project").unwrap().project_type, "Python");
+    }
+
+    #[test]
+    fn test_project_file_at_root() {
+        // File directly in project root (no subdirectory)
+        let mut projects = HashMap::new();
+        projects.insert("/home/user/docs/my-app".to_string(), DetectedProject {
+            name: "my-app".to_string(),
+            project_type: "Node.js",
+        });
+        let result = file_in_project("/home/user/docs/my-app/package.json", &projects);
+        assert!(result.is_some());
+        let (_, rel_dir) = result.unwrap();
+        assert_eq!(rel_dir, ""); // Root of project, no subdirectory
+    }
+
+    #[test]
+    fn test_custom_dev_folder() {
+        let project = DetectedProject {
+            name: "my-app".to_string(),
+            project_type: "Node.js",
+        };
+        let dest = get_project_destination(&project, Some("~/projects"));
+        assert!(dest.to_string_lossy().contains("projects/my-app"));
     }
 }

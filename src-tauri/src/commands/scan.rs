@@ -61,7 +61,10 @@ async fn classify_hybrid(
 
     // Phase 0: Detect project directories from file paths
     let file_paths: Vec<String> = files.iter().map(|f| f.path.clone()).collect();
-    let projects = rules::context::detect_projects(&file_paths);
+    let mut projects = rules::context::detect_projects(&file_paths);
+    // Don't detect the scan root itself as a project — user is intentionally
+    // organizing within it, not trying to move it elsewhere
+    projects.remove(base_folder);
 
     // Load custom settings
     let dev_folder = db::get_setting("dev_folder").ok().flatten();
